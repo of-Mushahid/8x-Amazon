@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
-import { normalizeItems, useShop } from "@/lib/store";
+import { useShop, normalizeItems } from "@/lib/store";
 import type { CartItem } from "@/lib/types";
 
 type SessionState = { user: User | null; ready: boolean; configured: boolean; signOut: () => Promise<void> };

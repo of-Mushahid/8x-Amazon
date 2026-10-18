@@ -1,9 +1,24 @@
 import { cookies } from "next/headers";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { checkDatabaseError, configurationRequired, errorResponse, getVerifiedUser, jsonResponse, requireServerSupabase } from "@/lib/supabase/server";
-import { COOKIE_MAX_AGE, GUEST_SESSION_COOKIE, checkoutFingerprint, checkoutScope, guestReceiptSecret, hashSecret, isSecret, newSecret, parseCheckoutInput, readJson, receiptCookie, UUID_PATTERN } from "@/lib/checkout";
+import { COOKIE_MAX_AGE, GUEST_SESSION_COOKIE, assertSameOrigin, checkoutFingerprint, checkoutScope, guestReceiptSecret, hashSecret, isSecret, newSecret, parseCheckoutInput, readJson, receiptCookie, StoreError, UUID_PATTERN } from "@/lib/checkout";
 
 export const runtime = "nodejs";
+
+export async function GET(request: Request) {
+  try {
+    assertSameOrigin(request);
+    await requireServerSupabase();
+    if (!getAdminSupabase()) throw configurationRequired();
+    const cookieStore = await cookies();
+    const existing = cookieStore.get(GUEST_SESSION_COOKIE)?.value;
+    cookieStore.set(GUEST_SESSION_COOKIE, isSecret(existing) ? existing : newSecret(), {
+      httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
+      path: "/api/checkout", maxAge: COOKIE_MAX_AGE,
+    });
+    return jsonResponse({ ready: true });
+  } catch (error) { return errorResponse(error); }
+}
 
 export async function POST(request: Request) {
   try {
@@ -16,11 +31,8 @@ export async function POST(request: Request) {
     let guestSecret: string | null = null;
     if (!user) {
       const existing = cookieStore.get(GUEST_SESSION_COOKIE)?.value;
-      guestSecret = isSecret(existing) ? existing : newSecret();
-      cookieStore.set(GUEST_SESSION_COOKIE, guestSecret, {
-        httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production",
-        path: "/api/checkout", maxAge: COOKIE_MAX_AGE,
-      });
+      if (!isSecret(existing)) throw new StoreError("Initialize your checkout session before placing an order. Please retry.", 409, "CHECKOUT_SESSION_REQUIRED");
+      guestSecret = existing;
     }
     const receipt = guestSecret ? guestReceiptSecret(guestSecret, input.idempotencyKey) : null;
     // No client price, totals, inventory, user ID, status, or card data enters this RPC.

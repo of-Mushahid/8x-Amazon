@@ -8,16 +8,10 @@ export const runtime = "nodejs";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const client = await requireServerSupabase();
     const { id: rawId } = await context.params;
     if (!UUID_PATTERN.test(rawId)) throw new StoreError("Order not found or receipt access is unavailable.", 404, "ORDER_NOT_FOUND");
     const id = rawId.toLowerCase();
-    const user = await getVerifiedUser(client);
-    if (user) {
-      const { data, error } = await client.from("orders").select(ORDER_SELECT).eq("id", id).eq("user_id", user.id).maybeSingle();
-      checkDatabaseError(error);
-      if (data) return jsonResponse({ order: data as Order });
-    }
+    // Receipt possession is independent of Auth, including expired sign-in cookies.
     const secret = (await cookies()).get(receiptCookie(id).name)?.value;
     if (isSecret(secret)) {
       const admin = getAdminSupabase();
@@ -25,6 +19,13 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       // A narrowly scoped server read, never a guest SELECT policy or a secret in the URL.
       const { data, error } = await admin.from("orders").select(ORDER_SELECT)
         .eq("id", id).is("user_id", null).eq("guest_receipt_hash", hashSecret(secret)).maybeSingle();
+      checkDatabaseError(error);
+      if (data) return jsonResponse({ order: data as Order });
+    }
+    const client = await requireServerSupabase();
+    const user = await getVerifiedUser(client);
+    if (user) {
+      const { data, error } = await client.from("orders").select(ORDER_SELECT).eq("id", id).eq("user_id", user.id).maybeSingle();
       checkDatabaseError(error);
       if (data) return jsonResponse({ order: data as Order });
     }

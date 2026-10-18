@@ -9,11 +9,15 @@ import { useShop } from "@/lib/store";
 export function Stars({ rating, count }: { rating: number; count?: number }) {
   return <span className="rating" aria-label={`${rating.toFixed(1)} out of 5 stars${count === undefined ? "" : `, ${count} sample reviews`}`}><Star size={13} fill="currentColor" /><strong>{rating.toFixed(1)}</strong>{count !== undefined && <span>({count})</span>}</span>;
 }
-export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
+export function ProductCard({ product: bundledProduct, index = 0 }: { product: Product; index?: number }) {
+  const product = useShop(state => state.catalog.find(item => item.id === bundledProduct.id) ?? bundledProduct);
   const add = useShop(state => state.add);
   const toggleSaved = useShop(state => state.toggleSaved);
   const isSaved = useShop(state => state.hydrated && state.saved.some(item => item.productId === product.id));
-  const discount = product.compare_at_price ? Math.round((1 - product.price / product.compare_at_price) * 100) : 0;
+  const defaultVariant = product.variants[0];
+  const price = product.price + (defaultVariant?.price_delta ?? 0);
+  const compareAtPrice = product.compare_at_price === null ? null : product.compare_at_price + (defaultVariant?.price_delta ?? 0);
+  const discount = compareAtPrice ? Math.round((1 - price / compareAtPrice) * 100) : 0;
   return <article className="product-card" style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}>
     <div className="product-visual">
       <Link className="product-image-link" href={`/product/${product.slug}`} aria-label={`View ${product.name}`}><Image src={product.images[0]} alt={product.name} fill sizes="(max-width: 600px) 45vw, (max-width: 1000px) 30vw, 23vw" /></Link>

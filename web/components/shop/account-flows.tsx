@@ -14,7 +14,7 @@ import {
 import { money, totals } from "@/data/catalog";
 import { resolveItems, useShop } from "@/lib/store";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
-import type { Address, CartItem, CheckoutInput, Order, OrderItem } from "@/lib/types";
+import type { Address, CheckoutInput, Order, OrderItem } from "@/lib/types";
 import { useSession } from "@/components/shop/providers";
 import "./account-flows.css";
 
@@ -197,9 +197,17 @@ function ProductThumb({ src, name }: { src: string; name: string }) {
     : <span className="af-product-image af-image-fallback" role="img" aria-label={name}><Package size={27} aria-hidden="true" /></span>;
 }
 
-function checkoutAttempt(items: CartItem[]) {
-  const fingerprint = JSON.stringify([...items].sort((a, b) => a.variantId.localeCompare(b.variantId)));
-  const storageKey = `everyday.checkout.v1:${fingerprint}`;
+async function checkoutAttempt(input: Omit<CheckoutInput, "idempotencyKey">) {
+  // Match the server fingerprint without importing its Node-only crypto helpers.
+  const items = input.items.map(({ productId, variantId, quantity }) => ({
+    productId: productId.toLowerCase(), variantId: variantId.toLowerCase(), quantity,
+  })).sort((a, b) => a.variantId < b.variantId ? -1 : a.variantId > b.variantId ? 1 : 0);
+  const { email, ...shipping } = checkoutSchema.parse({ ...input.shipping, email: input.email });
+  const normalized = JSON.stringify({ items, email: email.toLowerCase(), shipping, paymentMethod: "demo" });
+  // Persist only a digest, not the shopper's email/address, in the storage key.
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalized));
+  const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+  const storageKey = `everyday.checkout.v2:${fingerprint}`;
   try {
     const previous = sessionStorage.getItem(storageKey);
     if (previous && uuidPattern.test(previous)) return { storageKey, key: previous };
@@ -209,6 +217,18 @@ function checkoutAttempt(items: CartItem[]) {
   } catch {
     throw new Error("Allow session storage in your browser before placing a demo order. It helps prevent duplicate orders if you retry.");
   }
+}
+
+async function submitCheckout(input: CheckoutInput) {
+  const submit = async () => {
+    const session = await requestJson<{ ready: boolean }>("/api/checkout", { method: "GET" });
+    if (session.ready !== true) throw new Error("Your checkout session is not ready. Please retry.");
+    return requestJson<{ orderId: string }>("/api/checkout", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input),
+    });
+  };
+  // The cookie is shared across tabs, so serialize initialization through POST.
+  return navigator.locks ? navigator.locks.request("everyday.checkout", submit) : submit();
 }
 
 export function CheckoutFlow() {
@@ -243,12 +263,10 @@ export function CheckoutFlow() {
     let succeeded = false;
     try {
       const cartItems = rows.map(({ productId, variantId, quantity }) => ({ productId, variantId, quantity }));
-      const attempt = checkoutAttempt(cartItems);
       const { email, ...shipping } = values;
-      const input: CheckoutInput = { items: cartItems, email, shipping, paymentMethod: "demo", idempotencyKey: attempt.key };
-      const result = await requestJson<{ orderId: string }>("/api/checkout", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input),
-      });
+      const details = { items: cartItems, email, shipping, paymentMethod: "demo" as const };
+      const attempt = await checkoutAttempt(details);
+      const result = await submitCheckout({ ...details, idempotencyKey: attempt.key });
       if (!result.orderId || !uuidPattern.test(result.orderId)) throw new Error("We couldn’t read the order confirmation. Retry with the same bag; your request key has been kept to prevent duplicates.");
       succeeded = true;
       setCompleted(result.orderId);

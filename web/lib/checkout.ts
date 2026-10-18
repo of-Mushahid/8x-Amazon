@@ -168,7 +168,9 @@ export function safeRedirectPath(value: string | null): string {
     const decoded = decodeURIComponent(value);
     if (!value.startsWith("/") || value.startsWith("//") || !decoded.startsWith("/") || decoded.startsWith("//") || /[\\\u0000-\u0020\u007f]/.test(decoded)) return "/account";
     const parsed = new URL(value, "https://store.invalid");
-    return parsed.origin === "https://store.invalid" ? `${parsed.pathname}${parsed.search}${parsed.hash}` : "/account";
+    // Dot-segment normalization can turn an initially local path into //host.
+    if (parsed.origin !== "https://store.invalid" || decodeURIComponent(parsed.pathname).startsWith("//")) return "/account";
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
   } catch { return "/account"; }
 }
 
