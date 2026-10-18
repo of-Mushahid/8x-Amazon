@@ -1,20 +1,103 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ArrowUpRight, BadgeCheck, Headphones, Leaf, PackageCheck, ShieldCheck, Sparkles, Truck } from "lucide-react";
-import { categories, products } from "@/data/catalog";
+import { categories, money, products } from "@/data/catalog";
 import { ProductCard } from "@/components/shop/product-card";
 
 export default function Home() {
   const featured = [products[0], products[8], products[16], products[24]].filter(Boolean);
-  const deals = products.filter(product => product.compare_at_price).slice(0, 4);
-  return <div className="home">
-    <section className="container hero-section"><div className="hero"><Image src="/images/hero.webp" alt="A considered collection of furniture and everyday essentials" fill priority sizes="(max-width: 1400px) 100vw, 1360px" className="hero-image" /><div className="hero-shade" /><div className="hero-copy"><span className="hero-kicker"><span /> THE EVERYDAY EDIT · VOL. 01</span><h1>Good things.<br />For your <em>everyday.</em></h1><p>Thoughtful finds for the way you live.<br />Less searching. More loving what you find.</p><Link href="/shop" className="button hero-cta">Find your next favorite <ArrowUpRight size={20} /></Link><span className="hero-caption">A fresh perspective on everyday shopping.</span></div><div className="hero-stamp"><Sparkles size={20} /><span>A little more<br /><strong>considered.</strong></span></div><div className="hero-bottom"><span>THE ART OF EVERYDAY LIVING</span><span>CURATED <span className="hero-line" /> FOR YOU</span></div></div></section>
-    <div className="container benefits-bar"><span><Truck /> Free shipping, $50+</span><span><PackageCheck /> Easy 30-day returns</span><span><ShieldCheck /> Upfront pricing</span><span><Headphones /> Thoughtfully selected</span></div>
-    <section className="container section categories-section"><div className="section-heading"><div><span className="eyebrow">A WORLD OF GOOD FINDS</span><h2>What’s your everyday?</h2></div><Link href="/shop" className="text-link">Explore everything <ArrowUpRight size={17} /></Link></div><div className="category-grid">{categories.map((category, index) => <Link key={category.id} href={`/shop?category=${category.id}`} className={`category-card category-${index}`}><div className="category-photo"><Image src={category.image_url} alt="" fill sizes="(max-width: 650px) 24vw, 12vw" /></div><span>{category.name}</span><ArrowUpRight size={14} /></Link>)}</div></section>
-    <section className="container section"><div className="section-heading"><div><span className="eyebrow">LESS SCROLLING. MORE DISCOVERING.</span><h2>Your new favorites, found.</h2><p>A few of our picks to make the ordinary a little better.</p></div><Link href="/shop?featured=1" className="text-link">Shop the edit <ArrowUpRight size={17} /></Link></div><div className="product-grid">{featured.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div></section>
-    <section className="container editorial-grid"><Link href="/shop?category=home" className="editorial-card home-edit"><div><span className="eyebrow">MAKE YOURSELF AT HOME</span><h2>Your space.<br />A softer landing.</h2><p>Small comforts. A big difference.</p><span className="round-arrow"><ArrowUpRight size={21} /></span></div><div className="editorial-photo"><Image src={products[8].images[0]} alt={products[8].name} fill sizes="(max-width: 650px) 50vw, 30vw" /></div></Link><Link href="/shop?category=tech" className="editorial-card tech-edit"><div><span className="eyebrow">A SMARTER EVERYDAY</span><h2>Little upgrades.<br />Better routines.</h2><p>Tech that fits the way you live.</p><span className="round-arrow"><ArrowUpRight size={21} /></span></div><div className="editorial-photo"><Image src={products[0].images[0]} alt={products[0].name} fill sizes="(max-width: 650px) 50vw, 30vw" /></div></Link></section>
-    <section className="container section"><div className="section-heading"><div><span className="eyebrow orange">GOOD FINDS, EVEN BETTER PRICES</span><h2>A little less. A lot to love.</h2></div><Link href="/shop?deals=1" className="text-link">All good deals <ArrowUpRight size={17} /></Link></div><div className="product-grid">{deals.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div></section>
-    <section className="container philosophy"><div className="philosophy-mark"><Leaf size={30} /></div><div><span className="eyebrow">SHOPPING, WITH A LITTLE MORE THOUGHT</span><h2>More intention. Less overwhelm.</h2><p>Not everything you could buy. Just things you’ll be glad you found.<br />Discover a simpler, calmer way to shop for your everyday.</p></div><Link href="/shop" className="button secondary">Meet your everyday <ArrowRight size={17} /></Link></section>
-    <section className="container service-grid"><div><BadgeCheck /><h3>Quality, considered.</h3><p>A curated demo collection, chosen to make discovery feel effortless.</p></div><div><Truck /><h3>The total, upfront.</h3><p>Shipping and tax estimates before you reach checkout. No last-step surprises.</p></div><div><ShieldCheck /><h3>Just a shopping demo.</h3><p>Explore freely. Orders are simulated and no real payment information is collected.</p></div></section>
+  const deals = products.filter(p => p.compare_at_price).slice(0, 8);
+  const trending = products.slice(4, 12);
+
+  return <div className="amz-home">
+    <section className="amz-hero">
+      <div className="amz-hero-slide">
+        <Image src="/images/hero.webp" alt="Shop everyday essentials" fill priority sizes="100vw" className="amz-hero-img" />
+        <div className="amz-hero-overlay" />
+        <div className="amz-hero-content">
+          <span className="amz-hero-tag">Today&apos;s Deals</span>
+          <h1>Shop everyday<br />essentials</h1>
+          <p>Free shipping on orders over $50. Easy returns.</p>
+          <Link href="/shop" className="amz-hero-btn">Shop now</Link>
+        </div>
+      </div>
+    </section>
+
+    <section className="amz-cat-cards">
+      <div className="amz-cat-row">
+        {categories.slice(0, 4).map(cat => (
+          <Link key={cat.id} href={`/shop?category=${cat.id}`} className="amz-cat-card">
+            <h3>{cat.name}</h3>
+            <div className="amz-cat-card-img">
+              <Image src={cat.image_url} alt={cat.name} fill sizes="25vw" />
+            </div>
+            <span className="amz-cat-card-link">Shop now</span>
+          </Link>
+        ))}
+      </div>
+      <div className="amz-cat-row">
+        {categories.slice(4, 8).map(cat => (
+          <Link key={cat.id} href={`/shop?category=${cat.id}`} className="amz-cat-card">
+            <h3>{cat.name}</h3>
+            <div className="amz-cat-card-img">
+              <Image src={cat.image_url} alt={cat.name} fill sizes="25vw" />
+            </div>
+            <span className="amz-cat-card-link">Shop now</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+
+    <section className="amz-section">
+      <div className="amz-section-head">
+        <h2>Deals & Promotions</h2>
+        <Link href="/shop?deals=1">See all deals</Link>
+      </div>
+      <div className="amz-product-grid">
+        {deals.map((product, i) => <ProductCard key={product.id} product={product} index={i} />)}
+      </div>
+    </section>
+
+    <section className="amz-section">
+      <div className="amz-section-head">
+        <h2>Trending products</h2>
+        <Link href="/shop">See more</Link>
+      </div>
+      <div className="amz-product-grid">
+        {trending.map((product, i) => <ProductCard key={product.id} product={product} index={i} />)}
+      </div>
+    </section>
+
+    <section className="amz-section">
+      <div className="amz-section-head">
+        <h2>Featured picks</h2>
+        <Link href="/shop?featured=1">See more</Link>
+      </div>
+      <div className="amz-product-grid">
+        {featured.map((product, i) => <ProductCard key={product.id} product={product} index={i} />)}
+      </div>
+    </section>
+
+    <section className="amz-benefits">
+      <div className="amz-benefit">
+        <div className="amz-benefit-icon">🚚</div>
+        <h3>Free Shipping</h3>
+        <p>On orders over $50</p>
+      </div>
+      <div className="amz-benefit">
+        <div className="amz-benefit-icon">↩️</div>
+        <h3>Easy Returns</h3>
+        <p>30-day return policy</p>
+      </div>
+      <div className="amz-benefit">
+        <div className="amz-benefit-icon">🔒</div>
+        <h3>Secure Payment</h3>
+        <p>100% secure checkout</p>
+      </div>
+      <div className="amz-benefit">
+        <div className="amz-benefit-icon">💬</div>
+        <h3>24/7 Support</h3>
+        <p>Dedicated customer service</p>
+      </div>
+    </section>
   </div>;
 }

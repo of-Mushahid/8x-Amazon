@@ -2,30 +2,206 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Heart, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck, ZoomIn } from "lucide-react";
+import { Check, Heart, Minus, Plus, ShieldCheck, ShoppingCart, Truck, RotateCcw, ChevronRight } from "lucide-react";
 import { categories, money, products, totals } from "@/data/catalog";
 import type { Product } from "@/lib/types";
 import { useShop } from "@/lib/store";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { ProductCard, Stars } from "./product-card";
+import { useSession } from "./providers";
 
 export function ProductDetails({ product }: { product: Product }) {
   const [image, setImage] = useState(0);
   const [zoom, setZoom] = useState(false);
   const [variantId, setVariantId] = useState(product.variants[0].id);
   const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
   const touch = useRef(0);
   const add = useShop(state => state.add);
+  const setCartOpen = useShop(state => state.setCartOpen);
   const toggleSaved = useShop(state => state.toggleSaved);
   const saved = useShop(state => state.hydrated && state.saved.some(item => item.productId === product.id));
+  const { user } = useSession();
   const variant = product.variants.find(item => item.id === variantId)!;
   const price = product.price + variant.price_delta;
   const amount = totals(price * quantity);
   const category = categories.find(item => item.id === product.category_id);
   const related = products.filter(item => item.category_id === product.category_id && item.id !== product.id).slice(0, 4);
+  const deal = product.compare_at_price ? Math.round((1 - product.price / product.compare_at_price) * 100) : 0;
+
   function step(amount: number) { setImage(value => (value + amount + product.images.length) % product.images.length); }
-  return <div className="container page-space"><nav className="breadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><span>/</span><Link href={`/shop?category=${category?.id}`}>{category?.name}</Link><span>/</span><span>{product.name}</span></nav><div className="pdp-layout"><section className="gallery" aria-label="Product image gallery"><div className="gallery-main" tabIndex={0} aria-label="Product image. Use left and right arrow keys to browse, Enter to zoom." onKeyDown={event => { if (event.key === "ArrowRight") step(1); if (event.key === "ArrowLeft") step(-1); if (event.key === "Enter") setZoom(true); }} onTouchStart={event => { touch.current = event.touches[0].clientX; }} onTouchEnd={event => { const change = event.changedTouches[0].clientX - touch.current; if (Math.abs(change) > 40) step(change > 0 ? -1 : 1); }}>
-      <Image src={product.images[image]} alt={`${product.name}, view ${image + 1}`} fill priority sizes="(max-width: 900px) 100vw, 50vw" className="gallery-photo" />{product.compare_at_price && <span className="product-badge">A good deal</span>}<button className="zoom-button" aria-label="Enlarge product image" onClick={() => setZoom(true)}><ZoomIn size={19} /></button>{product.images.length > 1 && <div className="gallery-arrows"><button onClick={() => step(-1)} aria-label="Previous image"><ArrowLeft size={17} /></button><span>{image + 1} / {product.images.length}</span><button onClick={() => step(1)} aria-label="Next image"><ArrowRight size={17} /></button></div>}</div><div className="gallery-thumbs">{product.images.map((src, index) => <button key={src} className={image === index ? "selected" : ""} onClick={() => setImage(index)} aria-label={`Show image ${index + 1}`} aria-pressed={image === index}><Image src={src} alt="" width={76} height={84} /></button>)}<span>Hover to get a closer look.</span></div></section>
-      <section className="buy-box"><span className="eyebrow">{product.brand} · {category?.name}</span><h1>{product.name}</h1><a href="#reviews" className="review-link"><Stars rating={product.rating} count={product.review_count} /><span>Read sample reviews</span></a><div className="pdp-price"><strong>{money(price)}</strong>{product.compare_at_price && <del>{money(product.compare_at_price + variant.price_delta)}</del>}{product.compare_at_price && <span>Save {money(product.compare_at_price - product.price)}</span>}</div><p className="pdp-description">{product.description}</p><fieldset className="variant-picker"><legend>Make it yours <span>{variant.variant_name}</span></legend><div>{product.variants.map(item => <button className={variantId === item.id ? "selected" : ""} key={item.id} aria-pressed={variantId === item.id} onClick={() => { setVariantId(item.id); setQuantity(1); }}>{item.variant_name}{item.price_delta > 0 && ` +${money(item.price_delta)}`}</button>)}</div></fieldset><div className="stock-status"><span /> {Math.min(product.stock_quantity, variant.stock_quantity) <= 5 ? `Just ${Math.min(product.stock_quantity, variant.stock_quantity)} left in this demo collection` : "In stock. Ready for your everyday."}</div><div className="buy-actions"><div className="quantity-control"><button aria-label="Decrease quantity" disabled={quantity <= 1} onClick={() => setQuantity(value => value - 1)}><Minus size={16} /></button><output aria-label="Quantity">{quantity}</output><button aria-label="Increase quantity" disabled={quantity >= Math.min(10, variant.stock_quantity, product.stock_quantity)} onClick={() => setQuantity(value => value + 1)}><Plus size={16} /></button></div><button className="button" onClick={() => add(product.id, variant.id, quantity)} disabled={variant.stock_quantity <= 0}><ShoppingBag size={18} /> Add to bag <span>{money(price * quantity)}</span></button><button className={`icon-button pdp-save ${saved ? "selected" : ""}`} aria-label={saved ? "Remove from saved" : "Save for later"} aria-pressed={saved} onClick={() => toggleSaved(product.id)}><Heart size={22} fill={saved ? "currentColor" : "none"} /></button></div><div className="upfront-total"><div><ShieldCheck size={19} /><strong>No surprises at checkout.</strong><span>{money(amount.total)}</span></div><p>For {quantity} {quantity === 1 ? "item" : "items"}: {money(amount.tax)} estimated tax + {amount.shipping ? `${money(amount.shipping)} shipping` : "free shipping"}. Demo estimate at 8% tax.</p></div><div className="pdp-perks"><span><Truck size={18} /><strong>{product.delivery_days <= 2 ? "2-day delivery" : "3–5 day delivery"}</strong><small>Simulated US shipping</small></span><span><RotateCcw size={18} /><strong>30-day returns</strong><small>A little peace of mind</small></span></div><p className="demo-note">Independent demo store. No real purchase or payment will be made.</p></section>
-    </div><section className="product-story"><div><span className="eyebrow">THE LITTLE DETAILS</span><h2>Thoughtfully found.<br />Ready for your routine.</h2></div><div>{product.features.map(feature => <p key={feature}><Check size={17} />{feature}</p>)}</div></section><section className="section reviews-section" id="reviews"><div className="section-heading"><div><span className="eyebrow">A FEW PERSPECTIVES</span><h2>What the sample reviews say.</h2><p>Demonstration reviews from the seed catalog, not verified purchases.</p></div><Stars rating={product.rating} count={product.review_count} /></div><div className="reviews-grid">{product.reviews.map(review => <article key={review.id}><Stars rating={review.rating} /><h3>{review.title}</h3><p>{review.body}</p><div><span className="review-avatar">{review.author.charAt(0)}</span><strong>{review.author}</strong><small>Sample review</small></div></article>)}</div></section><section className="section"><div className="section-heading"><div><span className="eyebrow">KEEP THE GOOD FINDS COMING</span><h2>A few things you might love.</h2></div><Link className="text-link" href={`/shop?category=${category?.id}`}>Explore the department <ArrowRight size={16} /></Link></div><div className="product-grid">{related.map(item => <ProductCard key={item.id} product={item} />)}</div></section><Dialog open={zoom} onOpenChange={setZoom}><DialogContent className="image-dialog"><DialogTitle>{product.name}</DialogTitle><DialogDescription>View {image + 1} of {product.images.length}. Use the arrow buttons to browse.</DialogDescription><div className="zoomed-image"><Image src={product.images[image]} alt={`${product.name}, enlarged view ${image + 1}`} fill sizes="85vw" /></div>{product.images.length > 1 && <div className="dialog-image-controls"><button className="button secondary" onClick={() => step(-1)}><ArrowLeft size={15} /> Previous</button><button className="button secondary" onClick={() => step(1)}>Next <ArrowRight size={15} /></button></div>}</DialogContent></Dialog></div>;
+
+  function handleAdd() {
+    add(product.id, variantId, quantity);
+    setAdded(true);
+    setCartOpen(true);
+    setTimeout(() => setAdded(false), 2000);
+  }
+
+  return <div className="amz-pdp">
+    <nav className="amz-breadcrumb" aria-label="Breadcrumb">
+      <Link href="/">Home</Link><span> › </span>
+      <Link href={`/shop?category=${category?.id}`}>{category?.name}</Link><span> › </span>
+      <span>{product.name}</span>
+    </nav>
+
+    <div className="amz-pdp-layout">
+      <section className="amz-gallery" aria-label="Product images">
+        <div className="amz-gallery-main"
+          onMouseEnter={() => setZoom(true)}
+          onMouseLeave={() => setZoom(false)}
+          onTouchStart={event => { touch.current = event.touches[0].clientX; }}
+          onTouchEnd={event => { const change = event.changedTouches[0].clientX - touch.current; if (Math.abs(change) > 40) step(change > 0 ? -1 : 1); }}>
+          <Image src={product.images[image]} alt={`${product.name}, view ${image + 1}`} fill priority sizes="(max-width: 900px) 100vw, 40vw" />
+          {deal > 0 && <span className="amz-deal-badge">-{deal}%</span>}
+          {product.images.length > 1 && <div className="amz-gallery-nav">
+            <button onClick={() => step(-1)} aria-label="Previous image">‹</button>
+            <span>{image + 1} / {product.images.length}</span>
+            <button onClick={() => step(1)} aria-label="Next image">›</button>
+          </div>}
+        </div>
+        <div className="amz-gallery-thumbs">
+          {product.images.map((src, index) => (
+            <button key={src} className={image === index ? "amz-thumb-active" : ""} onClick={() => setImage(index)} aria-label={`View image ${index + 1}`}>
+              <Image src={src} alt="" width={56} height={56} />
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="amz-pdp-info">
+        <h1 className="amz-pdp-title">{product.name}</h1>
+        <div className="amz-pdp-brand">
+          <span>Brand: <Link href={`/shop?brand=${product.brand}`}>{product.brand}</Link></span>
+          <span className="amz-pdp-divider">|</span>
+          <Link href="#reviews"><Stars rating={product.rating} count={product.review_count} /> {product.rating} ratings</Link>
+        </div>
+        <hr className="amz-pdp-hr" />
+        <div className="amz-pdp-price-block">
+          {deal > 0 && <span className="amz-deal-label">{deal}% off</span>}
+          <span className="amz-price-lg">{money(price)}</span>
+          {product.compare_at_price && <span className="amz-price-was">List: <del>{money(product.compare_at_price + variant.price_delta)}</del></span>}
+        </div>
+        <p className="amz-pdp-desc">{product.description}</p>
+
+        <div className="amz-pdp-variants">
+          <label>Variant: <strong>{variant.variant_name}</strong></label>
+          <div className="amz-variant-options">
+            {product.variants.map(item => (
+              <button key={item.id} className={variantId === item.id ? "amz-variant-active" : ""} onClick={() => { setVariantId(item.id); setQuantity(1); }}>
+                {item.variant_name}
+                {item.price_delta > 0 && ` (+${money(item.price_delta)})`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="amz-pdp-stock">
+          {Math.min(product.stock_quantity, variant.stock_quantity) <= 5
+            ? <span className="amz-stock-low">Only {Math.min(product.stock_quantity, variant.stock_quantity)} left in stock - order soon.</span>
+            : <span className="amz-stock-ok">In Stock</span>}
+        </div>
+
+        <div className="amz-pdp-qty">
+          <label>Qty:</label>
+          <select value={quantity} onChange={e => setQuantity(Number(e.target.value))}>
+            {Array.from({ length: Math.min(10, variant.stock_quantity, product.stock_quantity) }, (_, i) => i + 1).map(n => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </div>
+
+        <button className="amz-add-cart-btn" onClick={handleAdd} disabled={variant.stock_quantity <= 0}>
+          <ShoppingCart size={18} /> Add to Cart
+        </button>
+        <button className="amz-buy-now-btn" onClick={() => { add(product.id, variantId, quantity); window.location.href = "/checkout"; }} disabled={variant.stock_quantity <= 0}>
+          Buy Now
+        </button>
+
+        <div className="amz-pdp-meta">
+          <button className={`amz-pdp-save ${saved ? "saved" : ""}`} onClick={() => { if (!user) return; toggleSaved(product.id); }}>
+            <Heart size={18} fill={saved ? "currentColor" : "none"} />
+            {saved ? "Saved" : "Save for later"}
+          </button>
+        </div>
+
+        <div className="amz-pdp-shipping">
+          <div><Truck size={18} /> <span>FREE delivery <strong>Tomorrow</strong> on orders over $50</span></div>
+          <div><RotateCcw size={18} /> <span>30-day returns policy</span></div>
+          <div><ShieldCheck size={18} /> <span>Secure transaction</span></div>
+        </div>
+      </section>
+
+      <aside className="amz-pdp-sidebar">
+        <div className="amz-sidebar-price">{money(price)}</div>
+        <div className="amz-sidebar-delivery">
+          <span>FREE delivery <strong>Tomorrow</strong></span>
+          <small>Or fastest delivery Today</small>
+        </div>
+        <div className="amz-pdp-stock">
+          {Math.min(product.stock_quantity, variant.stock_quantity) <= 5
+            ? <span className="amz-stock-low">Only {Math.min(product.stock_quantity, variant.stock_quantity)} left</span>
+            : <span className="amz-stock-ok">In Stock</span>}
+        </div>
+        <button className="amz-add-cart-btn" onClick={handleAdd} disabled={variant.stock_quantity <= 0}>
+          <ShoppingCart size={18} /> Add to Cart
+        </button>
+        <button className="amz-buy-now-btn" onClick={() => { add(product.id, variantId, quantity); window.location.href = "/checkout"; }} disabled={variant.stock_quantity <= 0}>
+          Buy Now
+        </button>
+        <div className="amz-sidebar-secure">
+          <ShieldCheck size={16} /> Secure transaction
+        </div>
+        <div className="amz-sidebar-details">
+          <div><span>Ships from</span><span>Everyday</span></div>
+          <div><span>Sold by</span><span>Everyday</span></div>
+          <div><span>Returns</span><Link href="/shop">30-day returns</Link></div>
+        </div>
+      </aside>
+    </div>
+
+    {zoom && <div className="amz-zoom-overlay" onClick={() => setZoom(false)}>
+      <Image src={product.images[image]} alt={`${product.name}, zoomed`} fill sizes="80vw" />
+    </div>}
+
+    <section className="amz-pdp-features">
+      <h2>About this item</h2>
+      <ul>
+        {product.features.map((feature, i) => <li key={i}><Check size={16} /> {feature}</li>)}
+      </ul>
+      <div className="amz-pdp-specs">
+        <div><span>Brand</span><span>{product.brand}</span></div>
+        <div><span>Color</span><span>{product.color}</span></div>
+        <div><span>Category</span><span>{category?.name}</span></div>
+      </div>
+    </section>
+
+    <section className="amz-pdp-reviews" id="reviews">
+      <h2>Customer reviews</h2>
+      <div className="amz-reviews-summary">
+        <Stars rating={product.rating} />
+        <span>{product.rating} out of 5</span>
+        <span className="amz-review-count">{product.review_count} global ratings</span>
+      </div>
+      <div className="amz-reviews-list">
+        {product.reviews.map(review => (
+          <article key={review.id} className="amz-review">
+            <div className="amz-review-header">
+              <span className="amz-review-author">{review.author}</span>
+              <Stars rating={review.rating} />
+            </div>
+            <h3>{review.title}</h3>
+            <p>{review.body}</p>
+            <small>Sample review</small>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section className="amz-pdp-related">
+      <h2>Products related to this item</h2>
+      <div className="amz-product-grid">
+        {related.map(item => <ProductCard key={item.id} product={item} />)}
+      </div>
+    </section>
+  </div>;
 }

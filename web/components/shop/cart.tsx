@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Heart, Minus, Plus, ShoppingBag, Trash2, Truck } from "lucide-react";
+import { Heart, Minus, Plus, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { money, totals, products } from "@/data/catalog";
 import { resolveItems, useShop } from "@/lib/store";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -13,27 +13,89 @@ export function CartLines({ compact = false }: { compact?: boolean }) {
   const remove = useShop(state => state.remove);
   const save = useShop(state => state.saveForLater);
   const close = useShop(state => state.setCartOpen);
-  return <div className={`cart-lines ${compact ? "compact" : ""}`}>{resolveItems(items).map(item => <article className="cart-line" key={item.variantId}>
-    <Link href={`/product/${item.product.slug}`} onClick={() => close(false)} className="cart-line-image"><Image src={item.product.images[0]} width={110} height={120} alt={item.product.name} /></Link>
-    <div className="cart-line-body"><Link href={`/product/${item.product.slug}`} onClick={() => close(false)}>{item.product.name}</Link><small className="muted">{item.variant.variant_name}</small><strong>{money(item.unitPrice)}</strong><div className="cart-line-controls"><div className="quantity-control"><button aria-label={`Decrease quantity of ${item.product.name}`} disabled={item.quantity <= 1} onClick={() => change(item.variantId, item.quantity - 1)}><Minus size={13} /></button><output aria-label={`Quantity of ${item.product.name}`}>{item.quantity}</output><button aria-label={`Increase quantity of ${item.product.name}`} disabled={item.quantity >= Math.min(item.variant.stock_quantity, item.product.stock_quantity, 10)} onClick={() => change(item.variantId, item.quantity + 1)}><Plus size={13} /></button></div><button className="text-link save-item" onClick={() => save(item.variantId)} aria-label={`Save ${item.product.name} for later`}><Heart size={13} />{!compact && "Save for later"}</button><button className="icon-button remove-item" aria-label={`Remove ${item.product.name}`} onClick={() => remove(item.variantId)}><Trash2 size={15} /></button></div></div>
-    {!compact && <strong className="line-total">{money(item.unitPrice * item.quantity)}</strong>}
-  </article>)}</div>;
+  return <div className={`amz-cart-lines ${compact ? "compact" : ""}`}>{resolveItems(items).map(item => <div className="amz-cart-item" key={item.variantId}>
+    <Link href={`/product/${item.product.slug}`} onClick={() => close(false)} className="amz-cart-img">
+      <Image src={item.product.images[0]} width={180} height={180} alt={item.product.name} />
+    </Link>
+    <div className="amz-cart-info">
+      <Link href={`/product/${item.product.slug}`} onClick={() => close(false)} className="amz-cart-name">{item.product.name}</Link>
+      <small className="amz-cart-variant">{item.variant.variant_name}</small>
+      <div className="amz-cart-price-line">
+        <span className="amz-price">{money(item.unitPrice)}</span>
+      </div>
+      <div className="amz-cart-controls">
+        <div className="amz-qty">
+          <button aria-label={`Decrease quantity of ${item.product.name}`} disabled={item.quantity <= 1} onClick={() => change(item.variantId, item.quantity - 1)}>−</button>
+          <span>{item.quantity}</span>
+          <button aria-label={`Increase quantity of ${item.product.name}`} disabled={item.quantity >= Math.min(item.variant.stock_quantity, item.product.stock_quantity, 10)} onClick={() => change(item.variantId, item.quantity + 1)}>+</button>
+        </div>
+        <span className="amz-cart-divider">|</span>
+        <button className="amz-cart-action" onClick={() => save(item.variantId)}>Save for later</button>
+        <span className="amz-cart-divider">|</span>
+        <button className="amz-cart-action amz-cart-delete" aria-label={`Remove ${item.product.name}`} onClick={() => remove(item.variantId)}>Delete</button>
+      </div>
+      <div className="amz-cart-stock">In Stock</div>
+    </div>
+    {!compact && <div className="amz-cart-line-total">
+      <strong className="amz-price">{money(item.unitPrice * item.quantity)}</strong>
+    </div>}
+  </div>)}</div>;
 }
+
 export function PriceSummary({ subtotal, children }: { subtotal: number; children?: React.ReactNode }) {
   const amount = totals(subtotal);
-  return <div className="price-summary"><div><span>Subtotal</span><span>{money(amount.subtotal)}</span></div><div><span>Shipping estimate</span><span>{amount.shipping === 0 ? <span className="green">On us</span> : money(amount.shipping)}</span></div><div><span>Estimated tax (8%)</span><span>{money(amount.tax)}</span></div><div className="summary-total"><strong>Estimated total</strong><strong>{money(amount.total)}</strong></div><p className="summary-disclaimer">USD · Simulated tax and shipping. No real payments.</p>{children}</div>;
+  return <div className="amz-summary">
+    <h3>Order Summary</h3>
+    <div className="amz-summary-row"><span>Items:</span><span>{money(amount.subtotal)}</span></div>
+    <div className="amz-summary-row"><span>Shipping & handling:</span><span>{amount.shipping === 0 ? "FREE" : money(amount.shipping)}</span></div>
+    <div className="amz-summary-row"><span>Total before tax:</span><span>{money(amount.subtotal + amount.shipping)}</span></div>
+    <div className="amz-summary-row"><span>Estimated tax (8%):</span><span>{money(amount.tax)}</span></div>
+    <div className="amz-summary-total"><span>Order total:</span><strong className="amz-price">{money(amount.total)}</strong></div>
+    {children}
+  </div>;
 }
+
 function ShippingProgress({ subtotal }: { subtotal: number }) {
-  return <div className="shipping-progress"><p><Truck size={16} />{subtotal >= 5000 ? "Your bag qualifies for free shipping." : <span>You’re {money(5000 - subtotal)} away from free shipping.</span>}</p><div><span style={{ width: `${Math.min(100, subtotal / 50)}%` }} /></div></div>;
+  const pct = Math.min(100, subtotal / 50);
+  return <div className="amz-shipping-bar">
+    {subtotal >= 5000
+      ? <p><span className="amz-free-badge">FREE Shipping</span> Your order qualifies for free shipping</p>
+      : <p>Add <strong className="amz-price">{money(5000 - subtotal)}</strong> of eligible items for <span className="amz-free-badge">FREE Shipping</span></p>}
+    <div className="amz-progress"><span style={{ width: `${pct}%` }} /></div>
+  </div>;
 }
+
 export function CartDrawer() {
   const open = useShop(state => state.cartOpen);
   const setOpen = useShop(state => state.setCartOpen);
   const items = useShop(state => state.items);
   const lines = resolveItems(items);
   const subtotal = lines.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  return <Sheet open={open} onOpenChange={setOpen}><SheetContent className="bag-drawer"><div className="bag-drawer-title"><SheetTitle>Your good finds <span>({items.reduce((sum, item) => sum + item.quantity, 0)})</span></SheetTitle><SheetDescription>A little something to make every day better.</SheetDescription></div>{lines.length ? <><ShippingProgress subtotal={subtotal} /><div className="drawer-scroll"><CartLines compact /></div><div className="drawer-summary"><PriceSummary subtotal={subtotal}><Link href="/checkout" className="button full" onClick={() => setOpen(false)}>Checkout <ArrowRight size={17} /></Link><Link href="/cart" className="view-bag" onClick={() => setOpen(false)}>View your bag</Link></PriceSummary></div></> : <div className="empty-state"><ShoppingBag size={42} /><h2>A little room for good things.</h2><p>Your bag is empty. Let’s find you a favorite.</p><Link href="/shop" className="button" onClick={() => setOpen(false)}>Explore the collection <ArrowRight size={16} /></Link></div>}</SheetContent></Sheet>;
+  const count = items.reduce((sum, item) => sum + item.quantity, 0);
+  return <Sheet open={open} onOpenChange={setOpen}>
+    <SheetContent side="right" className="amz-drawer">
+      <SheetTitle className="amz-drawer-title">Shopping Cart ({count})</SheetTitle>
+      <SheetDescription>Review your items before checkout</SheetDescription>
+      {lines.length ? <>
+        <ShippingProgress subtotal={subtotal} />
+        <div className="amz-drawer-scroll"><CartLines compact /></div>
+        <div className="amz-drawer-summary">
+          <div className="amz-drawer-total">
+            <span>Subtotal ({count} items):</span>
+            <strong className="amz-price-lg">{money(subtotal)}</strong>
+          </div>
+          <Link href="/checkout" className="amz-buy-btn" onClick={() => setOpen(false)}>Proceed to checkout</Link>
+        </div>
+      </> : <div className="amz-empty-cart">
+        <ShoppingCart size={60} />
+        <h2>Your Amazon Cart is empty</h2>
+        <p>Your shopping cart lives here. Go ahead, fill it up.</p>
+        <Link href="/shop" className="amz-buy-btn" onClick={() => setOpen(false)}>Continue shopping</Link>
+      </div>}
+    </SheetContent>
+  </Sheet>;
 }
+
 export function CartPage() {
   const items = useShop(state => state.items);
   const hydrated = useShop(state => state.hydrated);
@@ -41,12 +103,59 @@ export function CartPage() {
   const restore = useShop(state => state.restore);
   const lines = resolveItems(items);
   const subtotal = lines.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  if (!hydrated) return <div className="container page-space" aria-busy="true"><div className="skeleton" style={{ height: 320 }} /></div>;
-  return <div className="container page-space"><div className="breadcrumb"><Link href="/">Home</Link><span>/</span>Your bag</div><div className="page-heading"><div><span className="eyebrow">YOUR NEXT FAVORITES</span><h1>The good stuff, all together.</h1><p className="muted">{items.reduce((sum, item) => sum + item.quantity, 0)} items in your bag. Nothing hidden in the total.</p></div><Link href="/shop" className="text-link">Keep exploring <ArrowRight size={16} /></Link></div>{lines.length ? <div className="cart-layout"><section><ShippingProgress subtotal={subtotal} /><CartLines /></section><aside className="panel order-summary"><h2>Order summary</h2><PriceSummary subtotal={subtotal}><Link href="/checkout" className="button full">Continue to checkout <ArrowRight size={17} /></Link></PriceSummary></aside></div> : <div className="empty-state"><ShoppingBag size={46} /><h2>Your next favorite is out there.</h2><p>Your bag is empty, but there’s plenty to discover.</p><Link className="button" href="/shop">Find something good <ArrowRight size={16} /></Link></div>}{saved.length > 0 && <section className="section"><div className="section-heading"><h2>Saved for another day</h2><span className="muted">{saved.length} good finds</span></div><div className="product-grid">{saved.map(item => { const product = products.find(p => p.id === item.productId); return product ? <div key={item.productId}><ProductCard product={product} /><button className="button secondary full" onClick={() => restore(item.productId)}>Move to bag <Plus size={16} /></button></div> : null; })}</div></section>}</div>;
+  if (!hydrated) return <div className="amz-container amz-page" aria-busy="true"><div className="amz-skeleton" style={{ height: 320 }} /></div>;
+  return <div className="amz-container amz-page">
+    <div className="amz-breadcrumb"><Link href="/">Home</Link><span> › </span><span>Shopping Cart</span></div>
+    {lines.length ? <div className="amz-cart-layout">
+      <div>
+        <h1 className="amz-cart-title">Shopping Cart</h1>
+        <ShippingProgress subtotal={subtotal} />
+        <CartLines />
+        <div className="amz-cart-subtotal-bar">
+          <span>Subtotal ({lines.reduce((s, i) => s + i.quantity, 0)} items): <strong className="amz-price-lg">{money(subtotal)}</strong></span>
+        </div>
+      </div>
+      <aside className="amz-cart-sidebar">
+        <PriceSummary subtotal={subtotal}>
+          <Link href="/checkout" className="amz-buy-btn">Proceed to checkout</Link>
+        </PriceSummary>
+      </aside>
+    </div> : <div className="amz-empty-cart">
+      <ShoppingCart size={80} />
+      <h2>Your Amazon Cart is empty.</h2>
+      <p>Your shopping cart lives here. Go ahead, fill it up.</p>
+      <Link className="amz-buy-btn" href="/shop">Continue shopping</Link>
+    </div>}
+    {saved.length > 0 && <section className="amz-saved-section">
+      <h2>Saved for later ({saved.length} items)</h2>
+      <div className="amz-saved-grid">
+        {saved.map(item => {
+          const product = products.find(p => p.id === item.productId);
+          return product ? <div key={item.productId} className="amz-saved-item">
+            <Image src={product.images[0]} width={100} height={100} alt={product.name} />
+            <div>
+              <Link href={`/product/${product.slug}`}>{product.name}</Link>
+              <span className="amz-price">{money(product.price)}</span>
+              <button className="amz-cart-action" onClick={() => restore(item.productId)}>Move to Cart</button>
+            </div>
+          </div> : null;
+        })}
+      </div>
+    </section>}
+  </div>;
 }
+
 export function SavedPage() {
   const saved = useShop(state => state.saved);
   const hydrated = useShop(state => state.hydrated);
   const selected = products.filter(product => saved.some(item => item.productId === product.id));
-  return <div className="container page-space"><div className="page-heading"><div><span className="eyebrow">A LITTLE WISHLIST</span><h1>Worth coming back to.</h1><p className="muted">Your favorites, saved on this device.</p></div><Heart size={30} /></div>{!hydrated ? <div className="skeleton" style={{ height: 300 }} /> : selected.length ? <div className="product-grid">{selected.map(product => <ProductCard key={product.id} product={product} />)}</div> : <div className="empty-state"><Heart size={42} /><h2>Keep the good ones close.</h2><p>Tap the heart on a product to save it here.</p><Link className="button" href="/shop">Explore the collection <ArrowRight size={17} /></Link></div>}</div>;
+  return <div className="amz-container amz-page">
+    <h1 className="amz-page-title">Saved for later ({selected.length})</h1>
+    {!hydrated ? <div className="amz-skeleton" style={{ height: 300 }} /> : selected.length ? <div className="amz-product-grid">{selected.map(product => <ProductCard key={product.id} product={product} />)}</div> : <div className="amz-empty-cart">
+      <Heart size={60} />
+      <h2>No saved items</h2>
+      <p>Tap the heart on a product to save it here.</p>
+      <Link className="amz-buy-btn" href="/shop">Continue shopping</Link>
+    </div>}
+  </div>;
 }

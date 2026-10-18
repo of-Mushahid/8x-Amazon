@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Clock3, Heart, MapPin, Menu, Search, ShoppingBag, Truck, UserRound, X } from "lucide-react";
+import { ChevronDown, Heart, MapPin, Menu, Search, ShoppingCart, X } from "lucide-react";
 import { categories, money, products } from "@/data/catalog";
 import { useShop } from "@/lib/store";
 import { useSession } from "./providers";
@@ -17,78 +17,176 @@ export function Header() {
   const [mobile, setMobile] = useState(false);
   const [active, setActive] = useState(-1);
   const [recent, setRecent] = useState<string[]>([]);
+  const [catFilter, setCatFilter] = useState("all");
   const searchRef = useRef<HTMLDivElement>(null);
   const items = useShop(state => state.items);
   const hydrated = useShop(state => state.hydrated);
   const cartOpen = useShop(state => state.setCartOpen);
   const { user } = useSession();
+
   useEffect(() => {
     const timer = setTimeout(() => { setDebounced(query.trim()); setActive(-1); }, 180);
     return () => clearTimeout(timer);
   }, [query]);
+
   useEffect(() => {
     const outside = (event: MouseEvent) => { if (!searchRef.current?.contains(event.target as Node)) setOpen(false); };
     document.addEventListener("mousedown", outside);
     return () => document.removeEventListener("mousedown", outside);
   }, []);
+
   function openSearch() {
     try {
       const stored: unknown = JSON.parse(localStorage.getItem("everyday-searches") || "[]");
-      setRecent(Array.isArray(stored) ? stored.filter((value): value is string => typeof value === "string").slice(0, 5) : []);
+      setRecent(Array.isArray(stored) ? stored.filter((v): v is string => typeof v === "string").slice(0, 5) : []);
     } catch { setRecent([]); }
     setOpen(true);
   }
-  function clearRecent() {
-    setRecent([]);
-    try { localStorage.removeItem("everyday-searches"); } catch { /* Keep search usable when storage is blocked. */ }
-  }
-  const matches = debounced ? products.filter(p => `${p.name} ${p.description} ${p.brand}`.toLowerCase().includes(debounced.toLowerCase())).slice(0, 5) : [];
-  function remember(value: string) {
-    if (!value.trim()) return;
-    const next = [value.trim(), ...recent.filter(item => item !== value.trim())].slice(0, 5);
+
+  function clearRecent() { setRecent([]); localStorage.removeItem("everyday-searches"); }
+
+  function saveRecent(term: string) {
+    const next = [term, ...recent.filter(r => r !== term)].slice(0, 5);
     setRecent(next);
-    try { localStorage.setItem("everyday-searches", JSON.stringify(next)); } catch { /* Search still works when storage is unavailable. */ }
+    localStorage.setItem("everyday-searches", JSON.stringify(next));
   }
-  function search(value = query) {
-    remember(value); setOpen(false); setQuery(value); router.push(`/shop${value.trim() ? `?q=${encodeURIComponent(value.trim())}` : ""}`);
+
+  const results = debounced.length < 2 ? [] : products.filter(p =>
+    p.name.toLowerCase().includes(debounced.toLowerCase()) ||
+    p.description.toLowerCase().includes(debounced.toLowerCase())
+  ).slice(0, 5);
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!debounced) return;
+    saveRecent(debounced);
+    setOpen(false);
+    router.push(`/shop?q=${encodeURIComponent(debounced)}${catFilter !== "all" ? `&category=${catFilter}` : ""}`);
   }
+
+  function pickResult(product: typeof products[number]) {
+    saveRecent(query.trim());
+    setOpen(false);
+    setQuery("");
+    router.push(`/product/${product.slug}`);
+  }
+
+  function handleKey(e: React.KeyboardEvent) {
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive(a => Math.min(a + 1, results.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(a => Math.max(a - 1, -1)); }
+    else if (e.key === "Enter" && active >= 0) { e.preventDefault(); pickResult(results[active]); }
+    else if (e.key === "Escape") { setOpen(false); }
+  }
+
+  const count = items.reduce((sum, item) => sum + item.quantity, 0);
+
   return <>
-    <div className="announcement"><span>Good finds. Better every day.</span><span><Truck size={13} /> Free demo shipping on orders $50+ <span className="announcement-divider">|</span> Independent shopping concept</span></div>
-    <header className="site-header">
-      <div className="container header-main">
-        <button className="icon-button mobile-menu" aria-label="Open navigation" onClick={() => setMobile(true)}><Menu /></button>
-        <Link href="/" aria-label="Everyday home" className="wordmark">everyday<span className="logo-dot">.</span><span className="logo-smile" /></Link>
-        <div className="search-wrap" ref={searchRef} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}>
-          <form className="search-form" role="search" onSubmit={event => { event.preventDefault(); if (active >= 0 && matches[active]) { remember(query); setOpen(false); router.push(`/product/${matches[active].slug}`); } else search(); }}>
-            <Search size={19} />
-            <input aria-label="Search products" role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls="search-results" aria-activedescendant={active >= 0 ? `suggestion-${active}` : undefined} autoComplete="off" placeholder="Find your next everyday favorite" value={query} onChange={event => { setQuery(event.target.value); setOpen(true); }} onFocus={openSearch} onKeyDown={event => {
-              if (event.key === "Escape") setOpen(false);
-              if (event.key === "ArrowDown" && matches.length) { event.preventDefault(); setActive(value => (value + 1) % matches.length); setOpen(true); }
-              if (event.key === "ArrowUp" && matches.length) { event.preventDefault(); setActive(value => (value - 1 + matches.length) % matches.length); }
-            }} />
-            {query && <button type="button" className="search-clear" aria-label="Clear search" onClick={() => setQuery("")}><X size={15} /></button>}
-            <button type="submit" className="search-submit" aria-label="Submit search"><ArrowUpRight size={19} /></button>
+    <header className="amz-header">
+      <div className="amz-header-main">
+        <button className="amz-nav-link amz-nav-location-btn" onClick={() => setMobile(true)} aria-label="Open navigation">
+          <Menu size={20} />
+        </button>
+        <Link href="/" className="amz-logo" aria-label="Everyday home">
+          everyday<span className="amz-logo-dot">.</span>
+        </Link>
+        <div className="amz-delivery">
+          <MapPin size={18} />
+          <div>
+            <span className="amz-delivery-label">Deliver to</span>
+            <span className="amz-delivery-address">United States</span>
+          </div>
+        </div>
+        <div className="amz-search-wrap" ref={searchRef}>
+          <form onSubmit={submitSearch} role="search" className="amz-search-form">
+            <select className="amz-search-cat" value={catFilter} onChange={e => setCatFilter(e.target.value)} aria-label="Search category">
+              <option value="all">All</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <input
+              type="search" value={query} placeholder="Search everyday"
+              onChange={e => setQuery(e.target.value)} onFocus={openSearch} onKeyDown={handleKey}
+              aria-label="Search products" aria-expanded={open} aria-controls="search-popover" aria-autocomplete="list"
+            />
+            <button type="submit" className="amz-search-btn" aria-label="Search">
+              <Search size={20} />
+            </button>
           </form>
-          {open && <div className="search-popover">
-            <div className="eyebrow">{debounced ? "GOOD FINDS, RIGHT THIS WAY" : "A LITTLE INSPIRATION"}</div>
-            <div role="listbox" id="search-results">
-              {matches.map((product, index) => <button type="button" role="option" aria-selected={active === index} className={`search-result ${active === index ? "active" : ""}`} id={`suggestion-${index}`} key={product.id} onClick={() => { remember(query); setOpen(false); router.push(`/product/${product.slug}`); }}>
-                <Image src={product.images[0]} width={48} height={48} alt="" /><span>{product.name}<small>{product.brand}</small></span><strong>{money(product.price)}</strong>
-              </button>)}
-            </div>
-            {debounced && !matches.length && <p className="muted">No matches yet. Try “coffee”, “chair” or “phone”.</p>}
-            {!debounced && <div className="recent-searches">{(recent.length ? recent : ["coffee", "home", "laptop"]).map(value => <button key={value} onClick={() => search(value)}><Clock3 size={15} />{value}<ArrowUpRight size={14} /></button>)}{recent.length > 0 && <button className="text-link" onClick={clearRecent}>Clear recent searches</button>}</div>}
-            {debounced && <button className="all-results" onClick={() => search()}>See all results for “{query}” <ArrowUpRight size={16} /></button>}
+          {open && <div className="amz-search-popover" id="search-popover" role="listbox">
+            {results.length > 0 ? results.map((product, i) => (
+              <button key={product.id} role="option" aria-selected={i === active}
+                className={`amz-search-result ${i === active ? "active" : ""}`}
+                onClick={() => pickResult(product)} onMouseEnter={() => setActive(i)}>
+                <Image src={product.images[0]} alt="" width={40} height={40} />
+                <div className="amz-search-result-text">
+                  <span>{product.name}</span>
+                  <strong>{money(product.price)}</strong>
+                </div>
+              </button>
+            )) : debounced.length >= 2 ? <div className="amz-search-empty">No results for &ldquo;{debounced}&rdquo;</div> : <>
+              {recent.length > 0 && <div className="amz-search-recent">
+                <div className="amz-search-recent-head">
+                  <span>Recent searches</span>
+                  <button type="button" onClick={clearRecent}>Clear</button>
+                </div>
+                {recent.map(term => (
+                  <button key={term} type="button" onClick={() => { setQuery(term); setDebounced(term); }}>
+                    <Search size={14} /> {term}
+                  </button>
+                ))}
+              </div>}
+            </>}
+            {debounced.length >= 2 && <button type="button" className="amz-search-all" onClick={submitSearch as () => void}>
+              See all results for &ldquo;{debounced}&rdquo;
+            </button>}
           </div>}
         </div>
-        <div className="header-actions">
-          <Link href="/account" className="account-link"><UserRound size={20} /><span><small>{user ? "Welcome back" : "Hello, there"}</small>{user ? "Your account" : "Sign in"}</span></Link>
-          <Link href="/saved" className="icon-button saved-header" aria-label="Saved favorites"><Heart size={21} /></Link>
-          <button className="cart-button" aria-label={`Open shopping bag, ${hydrated ? items.reduce((sum, item) => sum + item.quantity, 0) : 0} items`} onClick={() => cartOpen(true)}><ShoppingBag size={21} /><span className="cart-label">Bag</span><span className="cart-count">{hydrated ? items.reduce((sum, item) => sum + item.quantity, 0) : 0}</span></button>
+        <div className="amz-header-actions">
+          <Link href={user ? "/account" : "/sign-in"} className="amz-nav-link amz-account-link">
+            <span className="amz-nav-line1">{user ? "Hello" : "Hello, sign in"}</span>
+            <span className="amz-nav-line2">Account & Lists <ChevronDown size={10} /></span>
+          </Link>
+          <Link href="/orders" className="amz-nav-link amz-orders-link">
+            <span className="amz-nav-line1">Returns</span>
+            <span className="amz-nav-line2">& Orders</span>
+          </Link>
+          <button className="amz-cart-btn" onClick={() => cartOpen(true)} aria-label={`Cart, ${count} items`}>
+            <ShoppingCart size={28} />
+            <span className="amz-cart-count">{count}</span>
+            <span className="amz-nav-line2">Cart</span>
+          </button>
         </div>
       </div>
-      <nav className="container category-nav" aria-label="Shop departments"><Link href="/shop" className="all-categories"><Menu size={16} /> All departments</Link><Link href="/shop?deals=1">Today’s good deals<span className="nav-dot" /></Link>{categories.slice(0, 4).map(category => <Link key={category.id} href={`/shop?category=${category.id}`}>{category.name}</Link>)}<span className="nav-location"><MapPin size={14} /> Delivering across the US</span></nav>
+      <nav className="amz-subnav">
+        <button className="amz-subnav-link" onClick={() => setMobile(true)}>
+          <Menu size={18} /> All
+        </button>
+        <Link href="/shop" className="amz-subnav-link">Today&apos;s Deals</Link>
+        <Link href="/shop" className="amz-subnav-link">Customer Service</Link>
+        <Link href="/shop" className="amz-subnav-link">Registry</Link>
+        <Link href="/shop" className="amz-subnav-link">Gift Cards</Link>
+        <Link href="/shop" className="amz-subnav-link">Sell</Link>
+      </nav>
     </header>
-    <Sheet open={mobile} onOpenChange={setMobile}><SheetContent side="left" className="mobile-navigation"><SheetTitle>Find your everyday</SheetTitle><SheetDescription>Explore all departments</SheetDescription><Link href="/shop" onClick={() => setMobile(false)}>Shop everything <ArrowUpRight size={16} /></Link>{categories.map(category => <Link href={`/shop?category=${category.id}`} key={category.id} onClick={() => setMobile(false)}>{category.name}<ArrowUpRight size={16} /></Link>)}<Link href="/account" onClick={() => setMobile(false)}>Your account</Link><Link href="/orders" onClick={() => setMobile(false)}>Your orders</Link></SheetContent></Sheet>
+    <Sheet open={mobile} onOpenChange={setMobile}>
+      <SheetContent side="left" className="amz-mobile-menu">
+        <SheetTitle>Navigation</SheetTitle>
+        <SheetDescription>Browse categories and pages</SheetDescription>
+        <div className="amz-mobile-profile">
+          <Heart size={22} /> <span>{user ? "Your account" : "Hello, sign in"}</span>
+        </div>
+        <nav className="amz-mobile-nav">
+          <Link href="/shop" onClick={() => setMobile(false)}>All Products</Link>
+          <div className="amz-mobile-trending">
+            <strong>Trending</strong>
+            <Link href="/shop?deals=1" onClick={() => setMobile(false)}>Deals</Link>
+            <Link href="/saved" onClick={() => setMobile(false)}>Saved</Link>
+          </div>
+          <div className="amz-mobile-cats">
+            <strong>Shop by category</strong>
+            {categories.map(c => <Link key={c.id} href={`/shop?category=${c.id}`} onClick={() => setMobile(false)}>{c.name}</Link>)}
+          </div>
+        </nav>
+      </SheetContent>
+    </Sheet>
   </>;
 }
