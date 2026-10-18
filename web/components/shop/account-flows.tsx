@@ -350,8 +350,31 @@ export function SignInFlow() {
   const [error, setError] = useState(linkError ? decodeURIComponent(linkError) : "");
   const [confirmation, setConfirmation] = useState("");
   const submitting = useRef(false);
+  const googleSubmitting = useRef(false);
   const form = useForm<AuthValues>({ defaultValues: { email: "", password: "" } });
   const { register, formState: { errors } } = form;
+
+  async function signInWithGoogle() {
+    if (googleSubmitting.current) return;
+    const client = getBrowserSupabase();
+    if (!client) { setError("Account services are not configured yet."); return; }
+    setError("");
+    googleSubmitting.current = true;
+    try {
+      const callback = new URL("/auth/callback", window.location.origin);
+      callback.searchParams.set("next", next);
+      const { error: authError } = await client.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: callback.toString(), queryParams: { prompt: "select_account" } },
+      });
+      if (authError) throw authError;
+      // On success Supabase redirects the browser to Google; nothing else to do here.
+    } catch (cause) {
+      setError(messageOf(cause, "Google sign-in is not available right now. Please use email and password."));
+      googleSubmitting.current = false;
+    }
+  }
+
 
   async function authenticate(raw: AuthValues) {
     if (submitting.current) return;
@@ -396,6 +419,11 @@ export function SignInFlow() {
         {confirmation ? <div className="af-confirmation" role="status"><span className="af-icon-tile"><Mail size={29} aria-hidden="true" /></span><p className="eyebrow">ONE MORE STEP</p><h1 id="auth-heading" className="page-heading">Check your inbox.</h1><p>Check <strong className="af-break-word">{confirmation}</strong> for an account confirmation email. If you already have an account, sign in instead.</p><p className="muted">Follow the confirmation link to return. If this page stays open, sign in here once your email is confirmed.</p><button className="button af-full-button" type="button" onClick={() => { setConfirmation(""); setMode("signin"); }}>Back to sign in</button></div> : <>
           <h1 id="auth-heading" className="page-heading">{mode === "signin" ? "Sign in" : "Create account"}</h1>
           {!configured && <div className="af-service-note" role="status">Account services aren’t configured yet. No account or sign-in can be created until the backend is connected.</div>}
+          <button type="button" className="af-google-btn" disabled={pending || !configured} onClick={signInWithGoogle}>
+            <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-2.1 14.1-5.5l-6.5-5.5C29.6 34.8 26.9 36 24 36c-5.2 0-9.6-3.3-11.2-8l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.5 5.5C41.4 36.3 44 30.6 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+            Continue with Google
+          </button>
+          <div className="af-or-divider" aria-hidden="true"><span>or</span></div>
           <form onSubmit={event => { void form.handleSubmit(authenticate)(event); }} noValidate aria-busy={pending}>
             <fieldset className="af-fieldset af-stack" disabled={pending}>
               <div className="field"><label htmlFor="auth-email">Email</label><input id="auth-email" type="email" autoComplete="email" maxLength={254} aria-required="true" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "auth-email-error" : undefined} {...register("email")} /><FieldError id="auth-email-error" message={errors.email?.message} /></div>
