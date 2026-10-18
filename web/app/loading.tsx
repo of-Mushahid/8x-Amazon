@@ -1,0 +1,2 @@
+import { Skeleton } from "@/components/ui/skeleton";
+export default function Loading() { return <div className="container page-space" aria-busy="true" aria-label="Loading good finds"><Skeleton className="h-10 w-64 mb-8" /><div className="product-grid">{Array.from({ length: 8 }, (_, i) => <div key={i}><Skeleton className="h-72 w-full rounded-xl" /><Skeleton className="h-5 w-3/4 mt-4" /><Skeleton className="h-5 w-1/3 mt-3" /></div>)}</div></div>; }

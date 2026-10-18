@@ -1,5 +1,53 @@
 # Capture Test Report
 
+## Corrected verification, 2026-10-18
+
+The first green claim below was premature. Version 1 combined progress text with final responses, rewrote entries, recorded unrelated sessions, and counted one manually exported canary. Historical log entries are preserved, not cleaned up.
+
+Version 2 uses `UserPromptSubmit` and `Stop` in the same user/project settings files. It copies `humanInput.text` verbatim and uses `Stop.last_assistant_message` for final-response-only capture. It excludes other workspaces except explicit capture canaries, preserves existing entries, tracks per-entry model keys, and deduplicates hooks with a per-session lock/state under `.git/agent-capture`. Only frontmatter counts/times change. No tool calls or reasoning are exported.
+
+Tool: Qoder Desktop. Planning and execution happen in the same agent session. The application exposes routing keys (`fast` historically and `smodel` for these tests), not a verifiable provider model ID; exact underlying identity is not claimed. This remains a disclosure limitation of the assignment's model-name requirement.
+
+Two fresh independent sessions were started after installation. Neither response was manually inserted or exported. The parent read the following automatically written files after both turns completed:
+
+- `.agent-logs/2026-10-18_13-21-31_29cfa289-a99f-428f-b1aa-41aa47cf6fec.md`
+- `.agent-logs/2026-10-18_13-21-31_8fae311c-30fb-44a5-8d5c-0f8c7e04b06c.md`
+
+```text
+[LOG_ENTRY type=PROMPT num=1 session=29cfa289]
+timestamp: 2026-10-18T13:21:31.350Z
+model: smodel
+
+CAPTURE TEST — 8x assignment, Mushahid Ahmed
+Automatic capture verification A. Do not use tools, read memory, modify files, or create sessions. Reply only with: CAPTURE A ACK
+
+
+[LOG_ENTRY type=RESPONSE num=1 session=29cfa289]
+timestamp: 2026-10-18T13:21:38.232Z
+model: smodel
+
+CAPTURE A ACK
+
+
+[LOG_ENTRY type=PROMPT num=1 session=8fae311c]
+timestamp: 2026-10-18T13:21:31.234Z
+model: smodel
+
+CAPTURE TEST — 8x assignment, Mushahid Ahmed
+Automatic capture verification B in an independent session. Do not use tools, read memory, modify files, or create sessions. Reply only with: CAPTURE B ACK
+
+
+[LOG_ENTRY type=RESPONSE num=1 session=8fae311c]
+timestamp: 2026-10-18T13:21:39.869Z
+model: smodel
+
+CAPTURE B ACK
+```
+
+Additional initial failures: shell JSON escaping corrupted Windows paths; `/tmp` resolved incorrectly under Windows Node; the first transcript slug missed the drive colon. Version 2 prefers the hook-provided `transcript_path` rather than guessing it. Global settings are machine-local, not a committed file. A fresh session opened directly in this repo loads the portable project hooks.
+
+## Historical first verification (superseded)
+
 ## Tool and model
 
 - **Tool:** Qoder Desktop (CLI/agent version 1.1.69)

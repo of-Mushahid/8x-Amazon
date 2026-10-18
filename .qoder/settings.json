@@ -1,20 +1,6 @@
 {
   "hooks": {
-    "Stop": [
-      {
-        "async": true,
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node",
-            "args": [
-              ".qoder/hooks/capture-log.js"
-            ],
-            "name": "capture-agent-log",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
+    "UserPromptSubmit": [{ "async": false, "hooks": [{ "type": "command", "command": "node", "args": [".qoder/hooks/capture-log.js"], "name": "capture-agent-prompt", "timeout": 30 }] }],
+    "Stop": [{ "async": false, "hooks": [{ "type": "command", "command": "node", "args": [".qoder/hooks/capture-log.js"], "name": "capture-agent-log", "timeout": 30 }] }]
   }
 }
