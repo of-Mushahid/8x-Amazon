@@ -200,8 +200,8 @@ ul { list-style: none; }
 .amz-star-count { font-size: 13px; color: var(--link); margin-left: 4px; }
 
 /* ===== CATALOG ===== */
-.amz-container { max-width: 1500px; margin: 0 auto; padding: 0 20px; }
-.amz-page { padding: 20px 0; }
+.amz-container { max-width: 1500px; margin: 0 auto; padding-inline: 20px; }
+.amz-page { padding-block: 20px; }
 .amz-breadcrumb { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
 .amz-breadcrumb a { color: var(--link); }
 .amz-catalog-layout { display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
@@ -386,12 +386,14 @@ ul { list-style: none; }
 .amz-page-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; }
 
 /* ===== STATIC CONTENT PAGES ===== */
-.amz-static { padding: 20px 0 60px; background: #fff; max-width: 1500px; margin: 0 auto; border-radius: 0; }
-.amz-static-head { padding: 8px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
-.amz-static-head h1 { font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.amz-static-page { background: #EAEDED; padding: 20px 16px 56px; }
+.amz-static { padding: 24px 28px 56px; background: #fff; max-width: 1180px; margin: 0 auto; border: 1px solid var(--border); border-radius: 8px; }
+.amz-static-head { padding: 4px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.amz-static-head h1 { font-size: 30px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .amz-static-sub { font-size: 15px; color: var(--text-secondary); }
-.amz-static-body { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 36px; align-items: start; }
+.amz-static-body { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 40px; align-items: start; }
 .amz-static-main { min-width: 0; }
+.amz-static-main p, .amz-static-lead { max-width: 72ch; }
 .amz-static-main h2 { font-size: 21px; font-weight: 700; color: var(--text); margin: 30px 0 12px; }
 .amz-static-main h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 18px 0 8px; }
 .amz-static-main p { font-size: 14px; line-height: 1.7; color: #111; margin-bottom: 12px; }

@@ -22,7 +22,8 @@ export type StaticContent = {
 };
 
 export function StaticPage({ content }: { content: StaticContent }) {
-  return <div className="amz-container amz-static">
+  return <div className="amz-static-page">
+    <div className="amz-static">
     <nav className="amz-breadcrumb" aria-label="Breadcrumb">
       <Link href="/">Home</Link>
       {content.crumbs.map((c, i) => <span key={i}> › {c.href ? <Link href={c.href}>{c.label}</Link> : <span>{c.label}</span>}</span>)}
@@ -39,6 +40,7 @@ export function StaticPage({ content }: { content: StaticContent }) {
         <h2>Explore</h2>
         <ul>{content.related.map((r, i) => <li key={i}><Link href={r.href}>{r.label}</Link></li>)}</ul>
       </aside>}
+    </div>
     </div>
   </div>;
 }
