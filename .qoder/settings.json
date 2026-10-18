@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "async": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              ".qoder/hooks/capture-log.js"
+            ],
+            "name": "capture-agent-log",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
