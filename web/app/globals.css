@@ -320,6 +320,8 @@ ul { list-style: none; }
 .amz-review h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
 .amz-review p { font-size: 14px; line-height: 1.6; margin-bottom: 4px; }
 .amz-review small { font-size: 12px; color: var(--text-secondary); }
+.amz-verified { display: inline-flex; align-items: center; gap: 5px; color: #007185; font-weight: 700; font-size: 12px; }
+.amz-verified::before { content: "\2713"; color: var(--green); }
 .amz-pdp-related { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 24px; }
 .amz-pdp-related h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
 

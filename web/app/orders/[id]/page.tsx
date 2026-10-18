@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { OrderDetailFlow } from "@/components/shop/account-flows";
 
 export const metadata: Metadata = {
-  title: "Your demo receipt | Everyday",
-  description: "Your Everyday demo order receipt. No payment was taken and no shipment is scheduled.",
+  title: "Order details | Everyday",
+  description: "View your Everyday order confirmation and details.",
   robots: { index: false, follow: false },
 };
 

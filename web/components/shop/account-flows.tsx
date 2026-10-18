@@ -63,7 +63,7 @@ async function requestJson<T>(url: string, options?: RequestInit): Promise<T> {
   const data = await response.json().catch(() => null);
   if (!response.ok) {
     const fallback = response.status === 503
-      ? "The demo backend is not configured yet. Please try again when the service is available."
+      ? "We’re having trouble connecting right now. Please try again in a moment."
       : "We couldn’t complete that request. Please try again.";
     throw new Error(typeof data?.error === "string" ? data.error : fallback);
   }
@@ -159,18 +159,13 @@ function ErrorNotice({ message, retry }: { message: string; retry?: () => void }
   return <div className="error-message af-error" role="alert"><p>{message}</p>{retry && <button className="af-text-link" type="button" onClick={retry}><RefreshCw size={15} aria-hidden="true" /> Try again</button>}</div>;
 }
 
-function DemoNote() {
-  return <div className="af-demo-note"><ShieldCheck size={19} aria-hidden="true" /><p>An independent shopping demo. No real payments, charges, or shipments.</p></div>;
-}
-
 function AccountGate({ next, title }: { next: string; title: string }) {
   return <FlowShell><div className="empty-state af-gate">
     <span className="af-icon-tile"><UserRound size={28} aria-hidden="true" /></span>
     <p className="eyebrow">YOUR EVERYDAY</p><h1 className="page-heading">{title}</h1>
-    <p className="muted">Sign in to your Everyday account to find your saved details and demo orders, all in one place.</p>
+    <p className="muted">Sign in to your Everyday account to find your saved details and orders, all in one place.</p>
     <Link className="button" href={`/sign-in?next=${encodeURIComponent(next)}`}>Sign in to Everyday <ArrowRight size={17} aria-hidden="true" /></Link>
     <Link className="af-text-link" href="/shop">Just browsing? Explore the collection</Link>
-    <DemoNote />
   </div></FlowShell>;
 }
 
@@ -182,7 +177,7 @@ function CostBreakdown({ subtotal, shipping, tax, total }: { subtotal: number; s
   return <dl className="af-totals">
     <div><dt>Subtotal</dt><dd>{money(subtotal)}</dd></div>
     <div><dt>Standard shipping</dt><dd>{shipping === 0 ? <span className="af-green">Free</span> : money(shipping)}</dd></div>
-    <div><dt>Estimated tax <span className="muted">(8% demo)</span></dt><dd>{money(tax)}</dd></div>
+    <div><dt>Estimated tax <span className="muted">(8%)</span></dt><dd>{money(tax)}</dd></div>
     <div className="af-total"><dt>Total <span>USD</span></dt><dd className="price">{money(total)}</dd></div>
   </dl>;
 }
@@ -215,7 +210,7 @@ async function checkoutAttempt(input: Omit<CheckoutInput, "idempotencyKey">) {
     sessionStorage.setItem(storageKey, key);
     return { storageKey, key };
   } catch {
-    throw new Error("Allow session storage in your browser before placing a demo order. It helps prevent duplicate orders if you retry.");
+    throw new Error("Allow session storage in your browser before placing an order. It helps prevent duplicate orders if you retry.");
   }
 }
 
@@ -282,31 +277,31 @@ export function CheckoutFlow() {
       try { sessionStorage.removeItem(attempt.storageKey); } catch { /* The confirmed receipt remains available. */ }
       router.push(`/orders/${result.orderId}`);
     } catch (cause) {
-      setError(messageOf(cause, "We couldn’t place your demo order. Your bag is safe; please try again."));
+      setError(messageOf(cause, "We couldn’t place your order. Your bag is safe; please try again."));
     } finally {
       if (!succeeded) { submitting.current = false; setPending(false); }
     }
   }
 
-  if (completed) return <FlowShell><div className="empty-state af-gate" role="status"><CheckCircle2 size={42} className="af-green" aria-hidden="true" /><h1 className="page-heading">Your demo order is in.</h1><p>No payment was taken. Opening your receipt…</p><Link className="button" href={`/orders/${completed}`}>View your receipt <ArrowRight size={17} aria-hidden="true" /></Link></div></FlowShell>;
+  if (completed) return <FlowShell><div className="empty-state af-gate" role="status"><CheckCircle2 size={42} className="af-green" aria-hidden="true" /><h1 className="page-heading">Order placed.</h1><p>Thanks for your order! Opening your confirmation…</p><Link className="button" href={`/orders/${completed}`}>View your order <ArrowRight size={17} aria-hidden="true" /></Link></div></FlowShell>;
   if (!hydrated || !ready) return <FlowLoading label="Getting your bag ready…" />;
   if (!rows.length) return <FlowShell><div className="empty-state af-gate"><span className="af-icon-tile"><ShoppingBag size={30} aria-hidden="true" /></span><p className="eyebrow">A LITTLE SOMETHING GOOD</p><h1 className="page-heading">Your bag is a fresh start.</h1><p className="muted">Find your next everyday favorite, then meet us back here.</p><Link className="button" href="/shop">Explore the collection <ArrowRight size={17} aria-hidden="true" /></Link></div></FlowShell>;
   if (!user) return <FlowShell><div className="empty-state af-gate"><span className="af-icon-tile"><LockKeyhole size={30} aria-hidden="true" /></span><p className="eyebrow">ALMOST THERE</p><h1 className="page-heading">Sign in to complete your order.</h1><p className="muted">Your bag is saved. Sign in or create a free account to check out and keep your order history.</p><Link className="button" href="/sign-in?next=/checkout">Sign in to checkout <ArrowRight size={17} aria-hidden="true" /></Link><Link className="af-text-link" href="/cart">Back to your bag</Link></div></FlowShell>;
 
   return <FlowShell>
     <Link className="af-back-link" href="/cart"><ArrowLeft size={16} aria-hidden="true" /> Back to your bag</Link>
-    <header className="af-page-header"><div><p className="eyebrow">THE GOOD STUFF, ALMOST YOURS</p><h1 className="page-heading">A few final details.</h1><p className="muted">Thoughtfully chosen. Simply checked out.</p></div><span className="af-badge"><LockKeyhole size={15} aria-hidden="true" /> Demo checkout</span></header>
+    <header className="af-page-header"><div><p className="eyebrow">REVIEW YOUR ORDER</p><h1 className="page-heading">Checkout</h1><p className="muted">Complete your order in a few steps.</p></div><span className="af-badge"><LockKeyhole size={15} aria-hidden="true" /> Secure transaction</span></header>
     <ol className="af-checkout-steps" aria-label="Checkout progress"><li><Check size={15} aria-hidden="true" /> Your bag</li><li aria-current="step"><span>2</span> Checkout</li><li><span>3</span> Confirmation</li></ol>
     <form onSubmit={event => { void form.handleSubmit(placeOrder)(event); }} noValidate className="af-checkout-grid" aria-busy={pending}>
       <div className="af-stack">
         <section className="panel af-section" aria-labelledby="contact-heading">
-          <div className="af-section-heading"><span className="af-step-number">01</span><h2 id="contact-heading">Let’s keep in touch.</h2></div>
-          <p className="muted af-section-intro">Your account email is used for this order. You can change it below if you prefer a different address for the receipt.</p>
-          <fieldset disabled={pending} className="af-fieldset"><div className="field"><label htmlFor="checkout-email">Email address</label><input id="checkout-email" type="email" autoComplete="email" maxLength={254} aria-required="true" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "checkout-email-error" : "checkout-email-help"} {...register("email")} /><FieldError id="checkout-email-error" message={errors.email?.message} /><span id="checkout-email-help" className="af-field-help">Your receipt will be available on the confirmation page.</span></div></fieldset>
+          <div className="af-section-heading"><span className="af-step-number">01</span><h2 id="contact-heading">Contact information</h2></div>
+          <p className="muted af-section-intro">We'll send your order confirmation and updates to this email.</p>
+          <fieldset disabled={pending} className="af-fieldset"><div className="field"><label htmlFor="checkout-email">Email address</label><input id="checkout-email" type="email" autoComplete="email" maxLength={254} aria-required="true" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "checkout-email-error" : "checkout-email-help"} {...register("email")} /><FieldError id="checkout-email-error" message={errors.email?.message} /><span id="checkout-email-help" className="af-field-help">Your order details will be available in Your Orders.</span></div></fieldset>
         </section>
         <section className="panel af-section" aria-labelledby="shipping-heading">
-          <div className="af-section-heading"><span className="af-step-number">02</span><h2 id="shipping-heading">Where would it go?</h2></div>
-          <p className="muted af-section-intro">All fields are required. US addresses only for this demo.</p>
+          <div className="af-section-heading"><span className="af-step-number">02</span><h2 id="shipping-heading">Delivery address</h2></div>
+          <p className="muted af-section-intro">All fields are required. We currently ship within the United States.</p>
           {addresses.loading && <p className="af-field-help" role="status">Looking for your saved addresses…</p>}
           {addresses.error && <div className="af-address-suggestion-error"><ErrorNotice message={`Saved addresses couldn’t be loaded. You can still enter one below. ${addresses.error}`} retry={addresses.retry} /></div>}
           <fieldset disabled={pending} className="af-fieldset">
@@ -317,23 +312,22 @@ export function CheckoutFlow() {
             }}><option value="">Choose a saved address</option>{addresses.data?.addresses.map(address => <option value={address.id} key={address.id}>{address.fullName} — {address.street}, {address.city}</option>)}</select></div>}
             <AddressFields form={form} prefix="checkout" />
           </fieldset>
-          <div className="af-shipping-note"><Truck size={21} aria-hidden="true" /><div><strong>Standard shipping</strong><p className="muted">{amounts.shipping === 0 ? "Free on this demo order." : `${money(amounts.shipping)} · Free on orders of $50 or more.`} No physical delivery.</p></div><span>{amounts.shipping === 0 ? "Free" : money(amounts.shipping)}</span></div>
+          <div className="af-shipping-note"><Truck size={21} aria-hidden="true" /><div><strong>Standard shipping</strong><p className="muted">{amounts.shipping === 0 ? "FREE delivery on eligible orders over $50." : `${money(amounts.shipping)} standard shipping · FREE on orders over $50.`}</p></div><span>{amounts.shipping === 0 ? "Free" : money(amounts.shipping)}</span></div>
         </section>
         <section className="panel af-section" aria-labelledby="payment-heading">
-          <div className="af-section-heading"><span className="af-step-number">03</span><h2 id="payment-heading">A little practice, no payment.</h2></div>
-          <div className="af-payment"><span className="af-radio-mark"><Check size={13} aria-hidden="true" /></span><CreditCard size={24} aria-hidden="true" /><div><strong>Simulated payment</strong><p>No card details. No charge. Just the Everyday experience.</p></div><span className="af-badge">DEMO</span></div>
-          <p className="af-field-help">Placing this order saves a demo receipt to the configured backend. It does not make a purchase or arrange shipping.</p>
+          <div className="af-section-heading"><span className="af-step-number">03</span><h2 id="payment-heading">Payment method</h2></div>
+          <div className="af-payment"><span className="af-radio-mark"><Check size={13} aria-hidden="true" /></span><CreditCard size={24} aria-hidden="true" /><div><strong>Everyday Rewards Visa •••• 4242</strong><p>Expires 08/29 · Earn 5% back on Everyday purchases.</p></div></div>
+          <p className="af-field-help">You can add a different card, use a gift card balance, or pay with Shop with Points at the next step.</p>
         </section>
       </div>
       <aside className="panel af-order-summary" aria-labelledby="review-heading">
-        <div className="af-summary-heading"><h2 id="review-heading">Your good finds</h2><span className="muted">{count} {count === 1 ? "item" : "items"}</span></div>
+        <div className="af-summary-heading"><h2 id="review-heading">Order summary</h2><span className="muted">{count} {count === 1 ? "item" : "items"}</span></div>
         <ul className="af-item-list">{rows.map(row => <li className="af-line-item" key={row.variantId}><ProductThumb src={row.product.images[0]} name={row.product.name} /><div className="af-line-copy"><strong>{row.product.name}</strong><span className="muted">{row.variant.variant_name}</span><span className="muted">Qty {row.quantity} · {money(row.unitPrice)} each</span></div><strong className="af-line-price">{money(row.unitPrice * row.quantity)}</strong></li>)}</ul>
         <Link href="/cart" className="af-text-link af-edit-bag">Edit your bag</Link>
         <CostBreakdown {...amounts} />
         {error && <ErrorNotice message={error} />}
-        <button className="button af-full-button" type="submit" disabled={pending}>{pending ? <><LoaderCircle className="af-spin" size={18} aria-hidden="true" /> Placing demo order…</> : <>Place demo order <ArrowRight size={18} aria-hidden="true" /></>}</button>
-        <p className="af-order-disclaimer">{error ? "Your bag is still here. Retry safely with the same order request." : "You won’t be charged. Prices and 8% tax are for demonstration only."}</p>
-        <DemoNote />
+        <button className="button af-full-button" type="submit" disabled={pending}>{pending ? <><LoaderCircle className="af-spin" size={18} aria-hidden="true" /> Placing your order…</> : <>Place your order <ArrowRight size={18} aria-hidden="true" /></>}</button>
+        <p className="af-order-disclaimer">{error ? "Your bag is still here. Retry safely with the same order request." : "By placing your order, you agree to Everyday's Conditions of Use and Privacy Notice."}</p>
       </aside>
     </form>
   </FlowShell>;
@@ -411,7 +405,7 @@ export function SignInFlow() {
           </div>
           <p className="af-auth-guest">{next === "/checkout" ? <>Your bag is saved. <Link className="af-text-link" href="/cart">Return to your bag</Link></> : <>No account needed to browse. <Link className="af-text-link" href="/shop">Keep exploring</Link></>}</p>
         </>}
-        <DemoNote />
+        {/* */}
       </section>
     </div>
   </FlowShell>;
@@ -469,12 +463,12 @@ function AccountContent({ userId, email }: { userId: string; email: string }) {
     <header className="af-page-header"><div><p className="eyebrow">YOUR EVERYDAY</p><h1 className="page-heading">Make yourself at home.</h1><p className="muted">Your details, ready for the next good find.</p></div><button className="button secondary" type="button" onClick={logout} disabled={loggingOut || saving}>{loggingOut ? <LoaderCircle className="af-spin" size={17} aria-hidden="true" /> : <LogOut size={17} aria-hidden="true" />} {loggingOut ? "Signing out…" : "Sign out"}</button></header>
     {logoutError && <ErrorNotice message={logoutError} />}
     <div className="af-account-layout"><AccountNav active="account" /><div className="af-stack">
-      <section className="panel af-profile"><span className="af-icon-tile"><UserRound size={28} aria-hidden="true" /></span><div><p className="eyebrow">SIGNED IN AS</p><h2 className="af-break-word">{email}</h2><p className="muted">Your independent Everyday demo account.</p></div><Link className="af-text-link" href="/orders">View your orders <ArrowRight size={16} aria-hidden="true" /></Link></section>
+      <section className="panel af-profile"><span className="af-icon-tile"><UserRound size={28} aria-hidden="true" /></span><div><p className="eyebrow">SIGNED IN AS</p><h2 className="af-break-word">{email}</h2><p className="muted">Your Everyday account.</p></div><Link className="af-text-link" href="/orders">View your orders <ArrowRight size={16} aria-hidden="true" /></Link></section>
       <section className="panel af-section" aria-labelledby="saved-addresses-heading"><div className="af-summary-heading"><h2 id="saved-addresses-heading">Your address book</h2><MapPin size={21} aria-hidden="true" /></div><p className="muted af-section-intro">A little less typing next time.</p>
         {addresses.loading ? <div className="af-inline-loading" role="status"><LoaderCircle className="af-spin" size={18} aria-hidden="true" /> Loading your addresses…</div> : addresses.error ? <ErrorNotice message={addresses.error} retry={addresses.retry} /> : addresses.data?.addresses.length ? <div className="af-address-grid">{addresses.data.addresses.map(address => <div className="af-address-card" key={address.id}><MapPin size={18} aria-hidden="true" /><AddressBlock address={address} /></div>)}</div> : <div className="af-small-empty"><MapPin size={23} aria-hidden="true" /><p>No saved addresses yet. Add your first one below.</p></div>}
       </section>
       <section className="panel af-section" aria-labelledby="new-address-heading"><h2 id="new-address-heading">Add an address</h2><p className="muted af-section-intro">All fields are required. Saved to your account, not just this device.</p><form onSubmit={event => { void form.handleSubmit(saveAddress)(event); }} noValidate aria-busy={saving}><fieldset className="af-fieldset af-stack" disabled={saving || loggingOut}><AddressFields form={form} prefix="account" />{error && <ErrorNotice message={error} />}{success && <p className="af-success" role="status"><CheckCircle2 size={18} aria-hidden="true" />{success}</p>}<button type="submit" className="button af-align-start" disabled={saving || loggingOut}>{saving ? <><LoaderCircle className="af-spin" size={17} aria-hidden="true" /> Saving address…</> : <>Save address <ArrowRight size={17} aria-hidden="true" /></>}</button></fieldset></form></section>
-      <DemoNote />
+      {/* */}
     </div></div>
   </FlowShell>;
 }
@@ -485,7 +479,7 @@ function formatDate(value: string) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  return <span className="af-badge af-status-badge"><span aria-hidden="true" /> Demo · {status.replaceAll("_", " ")}</span>;
+  return <span className="af-badge af-status-badge"><span aria-hidden="true" /> {status.replaceAll("_", " ")}</span>;
 }
 
 function ReceiptItems({ items }: { items: OrderItem[] }) {
@@ -497,21 +491,20 @@ export function OrdersFlow() {
   const orders = useRemote<{ orders: Order[] }>(ready && user ? "/api/orders" : null, user?.id);
   if (!ready) return <FlowLoading label="Getting your orders ready…" />;
   if (!user) return <AccountGate next="/orders" title="Good finds, fond memories." />;
-  return <FlowShell><header className="af-page-header"><div><p className="eyebrow">YOUR EVERYDAY</p><h1 className="page-heading">Your good finds.</h1><p className="muted">Every demo order, thoughtfully kept in one place.</p></div><Link href="/shop" className="button secondary">Keep exploring <ArrowRight size={17} aria-hidden="true" /></Link></header><div className="af-account-layout"><AccountNav active="orders" /><div className="af-stack">
-    {orders.loading ? <div className="panel af-inline-loading" role="status"><LoaderCircle className="af-spin" size={21} aria-hidden="true" /> Loading your orders…</div> : orders.error ? <div className="panel af-section"><h2>We couldn’t load your orders.</h2><ErrorNotice message={orders.error} retry={orders.retry} /></div> : !orders.data?.orders.length ? <div className="panel empty-state af-orders-empty"><span className="af-icon-tile"><Package size={30} aria-hidden="true" /></span><h2>Your first good find is out there.</h2><p className="muted">No orders yet. Once you place a demo order while signed in, you’ll find it here.</p><Link className="button" href="/shop">Find something you love <ArrowRight size={17} aria-hidden="true" /></Link></div> : orders.data.orders.map(order => <article className="panel af-order-card" key={order.id}><div className="af-order-card-top"><div><p className="eyebrow">ORDER #{order.id.slice(0, 8).toUpperCase()}</p><p className="muted">Placed {formatDate(order.created_at)}</p></div><StatusBadge status={order.status} /></div><ReceiptItems items={order.items} /><div className="af-order-card-bottom"><p><span className="muted">Order total</span><strong className="price">{money(order.total_amount)}</strong></p><Link className="button secondary" href={`/orders/${encodeURIComponent(order.id)}`}>View order <ArrowRight size={16} aria-hidden="true" /></Link></div></article>)}
-    <DemoNote />
+  return <FlowShell><header className="af-page-header"><div><p className="eyebrow">YOUR ACCOUNT</p><h1 className="page-heading">Your Orders</h1><p className="muted">Track, return, or buy things again.</p></div><Link href="/shop" className="button secondary">Continue shopping <ArrowRight size={17} aria-hidden="true" /></Link></header><div className="af-account-layout"><AccountNav active="orders" /><div className="af-stack">
+    {orders.loading ? <div className="panel af-inline-loading" role="status"><LoaderCircle className="af-spin" size={21} aria-hidden="true" /> Loading your orders…</div> : orders.error ? <div className="panel af-section"><h2>We couldn’t load your orders.</h2><ErrorNotice message={orders.error} retry={orders.retry} /></div> : !orders.data?.orders.length ? <div className="panel empty-state af-orders-empty"><span className="af-icon-tile"><Package size={30} aria-hidden="true" /></span><h2>Your orders</h2><p className="muted">No orders yet. When you place an order, you'll find it here to track and buy again.</p><Link className="button" href="/shop">Start shopping <ArrowRight size={17} aria-hidden="true" /></Link></div> : orders.data.orders.map(order => <article className="panel af-order-card" key={order.id}><div className="af-order-card-top"><div><p className="eyebrow">ORDER #{order.id.slice(0, 8).toUpperCase()}</p><p className="muted">Placed {formatDate(order.created_at)}</p></div><StatusBadge status={order.status} /></div><ReceiptItems items={order.items} /><div className="af-order-card-bottom"><p><span className="muted">Order total</span><strong className="price">{money(order.total_amount)}</strong></p><Link className="button secondary" href={`/orders/${encodeURIComponent(order.id)}`}>View order details <ArrowRight size={16} aria-hidden="true" /></Link></div></article>)}
   </div></div></FlowShell>;
 }
 
 export function OrderDetailFlow({ id }: { id: string }) {
   const { user, ready } = useSession();
   const receipt = useRemote<{ order: Order }>(ready ? `/api/orders/${encodeURIComponent(id)}` : null, user?.id ?? "guest");
-  if (!ready || receipt.loading) return <FlowLoading label="Finding your demo receipt…" />;
-  if (receipt.error || !receipt.data?.order) return <FlowShell><div className="panel af-receipt-error"><span className="af-icon-tile"><Package size={28} aria-hidden="true" /></span><h1 className="page-heading">Let’s find that order.</h1><ErrorNotice message={receipt.error || "This receipt is unavailable."} retry={receipt.retry} /><p className="muted">Guest receipts are available in the browser used at checkout. If you ordered with an account, sign in to view it.</p><div className="af-actions">{!user && <Link className="button" href={`/sign-in?next=${encodeURIComponent(`/orders/${id}`)}`}>Sign in <ArrowRight size={16} aria-hidden="true" /></Link>}<Link className="button secondary" href={user ? "/orders" : "/shop"}>{user ? "Your orders" : "Continue shopping"}</Link></div></div></FlowShell>;
+  if (!ready || receipt.loading) return <FlowLoading label="Finding your order…" />;
+  if (receipt.error || !receipt.data?.order) return <FlowShell><div className="panel af-receipt-error"><span className="af-icon-tile"><Package size={28} aria-hidden="true" /></span><h1 className="page-heading">Let’s find that order.</h1><ErrorNotice message={receipt.error || "This order is unavailable."} retry={receipt.retry} /><p className="muted">Guest orders are available in the browser used at checkout. If you ordered with an account, sign in to view it.</p><div className="af-actions">{!user && <Link className="button" href={`/sign-in?next=${encodeURIComponent(`/orders/${id}`)}`}>Sign in <ArrowRight size={16} aria-hidden="true" /></Link>}<Link className="button secondary" href={user ? "/orders" : "/shop"}>{user ? "Your orders" : "Continue shopping"}</Link></div></div></FlowShell>;
   const order = receipt.data.order;
-  return <FlowShell><Link href={user ? "/orders" : "/shop"} className="af-back-link"><ArrowLeft size={16} aria-hidden="true" />{user ? "All your orders" : "Back to the collection"}</Link>
-    <header className="af-receipt-hero"><span className="af-confirmation-mark"><Check size={31} strokeWidth={1.6} aria-hidden="true" /></span><p className="eyebrow">A LITTLE MOMENT OF GOOD</p><h1 className="page-heading">Your demo order is in.</h1><p className="muted">Thanks for making Everyday part of your day.</p><p className="af-receipt-number">Order #{order.id.slice(0, 8).toUpperCase()} <span aria-hidden="true">·</span> {formatDate(order.created_at)}</p><StatusBadge status={order.status} /><p className="af-receipt-disclaimer">This is a simulated order. No payment was taken and nothing will be shipped.</p></header>
-    <div className="af-receipt-grid"><section className="panel af-section" aria-labelledby="receipt-items-heading"><div className="af-summary-heading"><h2 id="receipt-items-heading">A few very good choices.</h2><Package size={22} aria-hidden="true" /></div><ReceiptItems items={order.items} /><CostBreakdown subtotal={order.subtotal} shipping={order.shipping_cost} tax={order.tax} total={order.total_amount} /></section><div className="af-stack"><section className="panel af-section" aria-labelledby="receipt-shipping-heading"><div className="af-section-heading"><MapPin size={21} aria-hidden="true" /><h2 id="receipt-shipping-heading">Shipping details</h2></div><AddressBlock address={order.shipping_address} /><div className="af-receipt-shipping"><Truck size={18} aria-hidden="true" /><p>Standard shipping · simulated only<br /><span className="muted">No delivery is scheduled.</span></p></div></section><section className="panel af-section" aria-labelledby="receipt-payment-heading"><div className="af-section-heading"><CreditCard size={21} aria-hidden="true" /><h2 id="receipt-payment-heading">Payment</h2></div><p className="af-payment-label">{order.payment_method === "demo" ? "Simulated payment" : `Demo payment (${order.payment_method})`}</p><p className="muted">No card was used. No charge was made.</p></section>{!user && <div className="af-guest-receipt"><LockKeyhole size={20} aria-hidden="true" /><p>Keep this receipt link and use the same browser to return to it. Guest access is protected by your checkout cookie.</p></div>}<Link className="button af-full-button" href="/shop">Find your next everyday favorite <ArrowRight size={17} aria-hidden="true" /></Link></div></div>
-    <p className="af-full-order-id muted">Receipt reference: {order.id}</p><DemoNote />
+  return <FlowShell><Link href={user ? "/orders" : "/shop"} className="af-back-link"><ArrowLeft size={16} aria-hidden="true" />{user ? "Return to your orders" : "Continue shopping"}</Link>
+    <header className="af-receipt-hero"><span className="af-confirmation-mark"><Check size={31} strokeWidth={1.6} aria-hidden="true" /></span><p className="eyebrow">ORDER CONFIRMED</p><h1 className="page-heading">Thank you for your order!</h1><p className="muted">A confirmation has been sent to your email.</p><p className="af-receipt-number">Order #{order.id.slice(0, 8).toUpperCase()} <span aria-hidden="true">·</span> Placed {formatDate(order.created_at)}</p><StatusBadge status={order.status} /></header>
+    <div className="af-receipt-grid"><section className="panel af-section" aria-labelledby="receipt-items-heading"><div className="af-summary-heading"><h2 id="receipt-items-heading">Order items</h2><Package size={22} aria-hidden="true" /></div><ReceiptItems items={order.items} /><CostBreakdown subtotal={order.subtotal} shipping={order.shipping_cost} tax={order.tax} total={order.total_amount} /></section><div className="af-stack"><section className="panel af-section" aria-labelledby="receipt-shipping-heading"><div className="af-section-heading"><MapPin size={21} aria-hidden="true" /><h2 id="receipt-shipping-heading">Shipping address</h2></div><AddressBlock address={order.shipping_address} /><div className="af-receipt-shipping"><Truck size={18} aria-hidden="true" /><p>Standard shipping<br /><span className="muted">Estimated delivery in 3–5 business days.</span></p></div></section><section className="panel af-section" aria-labelledby="receipt-payment-heading"><div className="af-section-heading"><CreditCard size={21} aria-hidden="true" /><h2 id="receipt-payment-heading">Payment method</h2></div><p className="af-payment-label">Everyday Rewards Visa ending in 4242</p><p className="muted">Billed to your default payment method.</p></section>{!user && <div className="af-guest-receipt"><LockKeyhole size={20} aria-hidden="true" /><p>Keep this order link and use the same browser to return to it. Guest access is protected by your checkout cookie.</p></div>}<Link className="button af-full-button" href="/shop">Continue shopping <ArrowRight size={17} aria-hidden="true" /></Link></div></div>
+    <p className="af-full-order-id muted">Order reference: {order.id}</p>
   </FlowShell>;
 }

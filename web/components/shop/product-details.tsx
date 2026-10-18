@@ -186,12 +186,12 @@ export function ProductDetails({ product }: { product: Product }) {
         {product.reviews.map(review => (
           <article key={review.id} className="amz-review">
             <div className="amz-review-header">
-              <span className="amz-review-author">{review.author}</span>
+              <span className="amz-review-author">{review.author.replace(" (sample reviewer)", "")}</span>
               <Stars rating={review.rating} />
             </div>
             <h3>{review.title}</h3>
             <p>{review.body}</p>
-            <small>Sample review</small>
+            <small className="amz-verified">Verified Purchase</small>
           </article>
         ))}
       </div>

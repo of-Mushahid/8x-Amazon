@@ -3,7 +3,7 @@ import { AccountFlow } from "@/components/shop/account-flows";
 
 export const metadata: Metadata = {
   title: "Your account | Everyday",
-  description: "Your Everyday account, saved addresses, and demo order history.",
+  description: "Your Everyday account, saved addresses, and order history.",
   robots: { index: false, follow: false },
 };
 

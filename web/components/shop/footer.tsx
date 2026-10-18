@@ -43,7 +43,7 @@ export function Footer() {
         <Link href="/conditions">Conditions of Use</Link>
         <Link href="/privacy">Privacy Notice</Link>
         <Link href="/privacy">Consumer Health Data</Link>
-        <span>© 2024, Everyday-demo, Inc. or its affiliates</span>
+        <span>© 2026, Everyday, Inc. or its affiliates</span>
       </div>
     </div>
   </footer>;

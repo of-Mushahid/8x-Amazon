@@ -9,7 +9,7 @@ import "./globals.css";
 const font = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Everyday | Good things for your everyday",
-  description: "Thoughtful finds, transparent prices and a calmer way to shop. An independent shopping demo inspired by Amazon.",
+  description: "Shop millions of products with fast delivery, easy returns and secure checkout. Search, discover and save your favourites on Everyday.",
   robots: { index: false, follow: false },
 };
 export default function RootLayout({ children }: { children: React.ReactNode }) {

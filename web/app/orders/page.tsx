@@ -3,7 +3,7 @@ import { OrdersFlow } from "@/components/shop/account-flows";
 
 export const metadata: Metadata = {
   title: "Your orders | Everyday",
-  description: "View your simulated Everyday orders and receipts.",
+  description: "Track, return, or buy things again. View your Everyday orders.",
   robots: { index: false, follow: false },
 };
 

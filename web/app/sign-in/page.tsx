@@ -4,7 +4,7 @@ import { FlowLoading, SignInFlow } from "@/components/shop/account-flows";
 
 export const metadata: Metadata = {
   title: "Sign in | Everyday",
-  description: "Sign in or create your account for the independent Everyday shopping demo.",
+  description: "Sign in or create your Everyday account.",
   robots: { index: false, follow: false },
 };
 
