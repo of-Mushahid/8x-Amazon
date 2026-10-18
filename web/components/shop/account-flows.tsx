@@ -343,10 +343,11 @@ export function SignInFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = safeNext(searchParams.get("next"));
+  const linkError = searchParams.get("error");
   const { user, ready, configured } = useSession();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(linkError ? decodeURIComponent(linkError) : "");
   const [confirmation, setConfirmation] = useState("");
   const submitting = useRef(false);
   const form = useForm<AuthValues>({ defaultValues: { email: "", password: "" } });
