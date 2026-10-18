@@ -1,10 +1,10 @@
 .account-flows {
-  --af-ink: #222823;
-  --af-green: #53694c;
-  --af-orange: #e66b38;
-  --af-border: #e3e4dc;
+  --af-ink: #0F1111;
+  --af-green: #007600;
+  --af-orange: #FF9900;
+  --af-border: #D5D9D9;
   color: var(--af-ink);
-  padding-block: 38px 72px;
+  padding-block: 28px 60px;
 }
 .account-flows .af-page-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 30px; }
 .account-flows .af-page-header .page-heading { margin: 8px 0 12px; }
@@ -104,31 +104,26 @@
 .account-flows .af-gate > .af-text-link { font-size: 13px; }
 .account-flows .af-gate .af-demo-note { margin-top: 19px; }
 .account-flows .af-icon-tile { display: inline-flex; align-items: center; justify-content: center; width: 65px; height: 65px; background: #edf0e7; color: var(--af-green); border-radius: 50%; flex-shrink: 0; }
-.account-flows.af-auth-page { padding-top: 54px; padding-bottom: 76px; }
-.account-flows .af-auth-layout { display: grid; grid-template-columns: .95fr 1.05fr; max-width: 1080px; margin: 0 auto; border: 1px solid #e0e3d7; border-radius: 16px; overflow: hidden; background: #fff; }
-.account-flows .af-auth-story { background: #e8ecdf; padding: 40px; display: flex; flex-direction: column; justify-content: space-between; gap: 54px; position: relative; overflow: hidden; }
-.account-flows .af-auth-story::after { content: ""; position: absolute; width: 320px; height: 320px; border: 1px solid #ced7bf; border-radius: 50%; right: -215px; bottom: 13%; box-shadow: 0 0 0 36px #e0e6d6, 0 0 0 37px #d1d9c3; pointer-events: none; }
-.account-flows .af-auth-story > * { position: relative; z-index: 1; }
-.account-flows .af-auth-wordmark { color: var(--af-ink); text-decoration: none; font-size: 26px; font-weight: 750; letter-spacing: -1.5px; align-self: flex-start; }
-.account-flows .af-auth-wordmark span { font-size: 10px; vertical-align: top; margin-left: 2px; letter-spacing: 0; }
-.account-flows .af-story-icon { display: inline-flex; border: 1px solid #c5d0b7; border-radius: 50%; padding: 15px; color: var(--af-green); margin-bottom: 24px; }
-.account-flows .af-auth-story .eyebrow { color: var(--af-green); font-size: 10px; letter-spacing: 1.4px; }
-.account-flows .af-auth-story h2 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 4vw, 54px); line-height: 1.12; letter-spacing: -1.9px; font-weight: 400; margin: 17px 0 23px; }
-.account-flows .af-auth-story h2 em { color: var(--af-green); font-weight: 400; }
-.account-flows .af-auth-story > div > p:last-child { max-width: 270px; font-size: 13px; line-height: 1.9; color: #67705d; }
-.account-flows .af-story-footer { display: flex; align-items: center; gap: 10px; font-size: 10px; color: #606a55; }
-.account-flows .af-auth-card { border: 0; border-radius: 0; padding: 49px 46px 35px; display: flex; flex-direction: column; justify-content: center; }
-.account-flows .af-auth-card .page-heading { font-size: clamp(29px, 3vw, 38px); margin: 11px 0 10px; line-height: 1.15; }
-.account-flows .af-auth-card > .muted { font-size: 13px; line-height: 1.75; }
-.account-flows .af-auth-toggle { display: grid; grid-template-columns: 1fr 1fr; background: #f3f4ee; padding: 4px; gap: 4px; border-radius: 9px; margin: 28px 0; }
-.account-flows .af-auth-toggle button { padding: 11px 8px; border: 0; border-radius: 6px; font-size: 12px; font-weight: 600; color: #747b6b; background: transparent; cursor: pointer; }
-.account-flows .af-auth-toggle button[aria-pressed="true"] { background: #fff; box-shadow: 0 1px 5px #2228230d; color: var(--af-ink); }
-.account-flows .af-service-note { padding: 13px 15px; background: #fbf3e7; border: 1px solid #eadcc5; border-radius: 9px; margin-bottom: 24px; font-size: 12px; color: #84602d; line-height: 1.7; }
-.account-flows .af-auth-guest { text-align: center; color: #747b6b; margin: 26px 0; font-size: 12px; line-height: 1.8; }
-.account-flows .af-auth-card > .af-demo-note { padding-top: 23px; border-top: 1px solid var(--af-border); margin-top: 8px; }
-.account-flows .af-confirmation { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; margin-bottom: 30px; }
+.account-flows.af-auth-page { padding-top: 30px; padding-bottom: 60px; }
+.account-flows .af-auth-layout { display: flex; justify-content: center; max-width: 1000px; margin: 0 auto; gap: 20px; align-items: flex-start; }
+.account-flows .af-auth-card { width: 350px; max-width: 100%; border: 1px solid var(--af-border); border-radius: 8px; padding: 26px; display: flex; flex-direction: column; background: #fff; box-shadow: 0 2px 8px rgba(15,17,17,.08); }
+.account-flows .af-auth-wordmark { color: var(--af-ink); text-decoration: none; font-size: 28px; font-weight: 700; letter-spacing: -1px; align-self: flex-start; margin-bottom: 18px; }
+.account-flows .af-auth-wordmark span { color: var(--af-orange); }
+.account-flows .af-auth-card .page-heading { font-size: 26px; font-weight: 700; margin: 0 0 14px; line-height: 1.2; }
+.account-flows .af-auth-card > .eyebrow { display: none; }
+.account-flows .af-auth-card > .muted { font-size: 13px; line-height: 1.6; margin-bottom: 18px; }
+.account-flows .af-auth-toggle { display: none; }
+.account-flows .af-auth-card .field { margin-bottom: 14px; }
+.account-flows .af-auth-card .field label { font-size: 13px; font-weight: 700; }
+.account-flows .af-service-note { padding: 13px 15px; background: #FFF8E1; border: 1px solid #F0E0A0; border-radius: 6px; margin-bottom: 18px; font-size: 12px; color: #84602d; line-height: 1.6; }
+.account-flows .af-auth-guest { text-align: center; color: #565959; margin: 18px 0; font-size: 12px; line-height: 1.7; }
+.account-flows .af-auth-switch { margin: 4px 0 18px; }
+.account-flows .af-auth-divider { border: 0; border-top: 1px solid #E7E7E7; margin: 18px 0 14px; box-shadow: 0 6px 6px -6px rgba(15,17,17,.3); }
+.account-flows .af-auth-switch p { font-size: 13px; color: #565959; margin-bottom: 14px; }
+.account-flows .af-auth-card > .af-demo-note { padding-top: 18px; border-top: 1px solid var(--af-border); margin-top: 12px; }
+.account-flows .af-confirmation { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
 .account-flows .af-confirmation .page-heading { margin: 0; }
-.account-flows .af-confirmation p { font-size: 14px; line-height: 1.8; }
+.account-flows .af-confirmation p { font-size: 14px; line-height: 1.7; }
 .account-flows .af-confirmation .eyebrow { font-size: 11px; }
 .account-flows .af-account-layout { display: grid; grid-template-columns: 235px minmax(0, 1fr); gap: 35px; align-items: start; }
 .account-flows .af-account-nav { display: flex; flex-direction: column; gap: 7px; }

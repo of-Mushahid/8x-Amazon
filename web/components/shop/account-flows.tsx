@@ -8,7 +8,7 @@ import { useForm, type FieldValues, type Path, type UseFormReturn } from "react-
 import { z } from "zod";
 import {
   ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronRight, CreditCard,
-  Leaf, LoaderCircle, LockKeyhole, LogOut, Mail, MapPin, Package,
+  LoaderCircle, LockKeyhole, LogOut, Mail, MapPin, Package,
   RefreshCw, ShieldCheck, ShoppingBag, Truck, UserRound,
 } from "lucide-react";
 import { money, totals } from "@/data/catalog";
@@ -383,20 +383,24 @@ export function SignInFlow() {
 
   return <FlowShell className="af-auth-page">
     <div className="af-auth-layout">
-      <aside className="af-auth-story"><Link href="/" className="af-auth-wordmark">everyday<span>demo</span></Link><div><span className="af-story-icon"><Leaf size={35} strokeWidth={1.3} aria-hidden="true" /></span><p className="eyebrow">GOOD THINGS, EVERY DAY.</p><h2>A little more<br />you. A little<br /><em>more everyday.</em></h2><p>Your favorites, thoughtful finds, and little upgrades. Make yourself at home.</p></div><div className="af-story-footer"><ShoppingBag size={18} aria-hidden="true" /><span>An independent store. A considered collection.</span></div></aside>
       <section className="panel af-auth-card" aria-labelledby="auth-heading">
-        {confirmation ? <div className="af-confirmation" role="status"><span className="af-icon-tile"><Mail size={29} aria-hidden="true" /></span><p className="eyebrow">ONE MORE LITTLE STEP</p><h1 id="auth-heading" className="page-heading">Check your inbox.</h1><p>Check <strong className="af-break-word">{confirmation}</strong> for an account confirmation email. If you already have an account, sign in instead.</p><p className="muted">Follow the confirmation link to return to Everyday. If this page stays open, sign in here once your email is confirmed.</p><button className="button" type="button" onClick={() => { setConfirmation(""); setMode("signin"); }}>Back to sign in <ArrowRight size={17} aria-hidden="true" /></button></div> : <>
-          <p className="eyebrow">YOUR EVERYDAY STARTS HERE</p><h1 id="auth-heading" className="page-heading">{mode === "signin" ? "Welcome back." : "Make yourself at home."}</h1><p className="muted">{mode === "signin" ? "A familiar place for all your good finds." : "Keep your addresses and demo orders in one place."}</p>
-          <div className="af-auth-toggle" role="group" aria-label="Account access"><button type="button" aria-pressed={mode === "signin"} disabled={pending} onClick={() => { setMode("signin"); setError(""); form.clearErrors(); }}>Sign in</button><button type="button" aria-pressed={mode === "signup"} disabled={pending} onClick={() => { setMode("signup"); setError(""); form.clearErrors(); }}>Create account</button></div>
+        <Link href="/" className="af-auth-wordmark">everyday<span>.</span></Link>
+        {confirmation ? <div className="af-confirmation" role="status"><span className="af-icon-tile"><Mail size={29} aria-hidden="true" /></span><p className="eyebrow">ONE MORE STEP</p><h1 id="auth-heading" className="page-heading">Check your inbox.</h1><p>Check <strong className="af-break-word">{confirmation}</strong> for an account confirmation email. If you already have an account, sign in instead.</p><p className="muted">Follow the confirmation link to return. If this page stays open, sign in here once your email is confirmed.</p><button className="button af-full-button" type="button" onClick={() => { setConfirmation(""); setMode("signin"); }}>Back to sign in</button></div> : <>
+          <h1 id="auth-heading" className="page-heading">{mode === "signin" ? "Sign in" : "Create account"}</h1>
           {!configured && <div className="af-service-note" role="status">Account services aren’t configured yet. No account or sign-in can be created until the backend is connected.</div>}
           <form onSubmit={event => { void form.handleSubmit(authenticate)(event); }} noValidate aria-busy={pending}>
             <fieldset className="af-fieldset af-stack" disabled={pending}>
-              <div className="field"><label htmlFor="auth-email">Email address</label><input id="auth-email" type="email" autoComplete="email" maxLength={254} aria-required="true" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "auth-email-error" : undefined} {...register("email")} /><FieldError id="auth-email-error" message={errors.email?.message} /></div>
-              <div className="field"><label htmlFor="auth-password">Password</label><input id="auth-password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} minLength={8} maxLength={128} aria-required="true" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? "auth-password-error auth-password-help" : "auth-password-help"} {...register("password")} /><FieldError id="auth-password-error" message={errors.password?.message} /><span className="af-field-help" id="auth-password-help">At least 8 characters.</span></div>
+              <div className="field"><label htmlFor="auth-email">Email</label><input id="auth-email" type="email" autoComplete="email" maxLength={254} aria-required="true" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "auth-email-error" : undefined} {...register("email")} /><FieldError id="auth-email-error" message={errors.email?.message} /></div>
+              <div className="field"><label htmlFor="auth-password">Password</label><input id="auth-password" type="password" autoComplete={mode === "signin" ? "current-password" : "new-password"} minLength={8} maxLength={128} aria-required="true" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? "auth-password-error auth-password-help" : "auth-password-help"} {...register("password")} /><FieldError id="auth-password-error" message={errors.password?.message} /><span className="af-field-help" id="auth-password-help">Passwords must be at least 8 characters.</span></div>
               {error && <ErrorNotice message={error} />}
-              <button type="submit" className="button af-full-button" disabled={pending || !configured}>{pending ? <><LoaderCircle className="af-spin" size={17} aria-hidden="true" /> One moment…</> : <>{mode === "signin" ? "Sign in" : "Create your account"} <ArrowRight size={17} aria-hidden="true" /></>}</button>
+              <button type="submit" className="button af-full-button" disabled={pending || !configured}>{pending ? <><LoaderCircle className="af-spin" size={17} aria-hidden="true" /> One moment…</> : <>{mode === "signin" ? "Sign in" : "Create your Everyday account"}</>}</button>
             </fieldset>
           </form>
+          <div className="af-auth-switch">
+            <hr className="af-auth-divider" aria-hidden="true" />
+            <p>{mode === "signin" ? "New to Everyday?" : "Already have an account?"}</p>
+            <button type="button" className="button secondary af-full-button" disabled={pending} onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); form.clearErrors(); }}>{mode === "signin" ? "Create your Everyday account" : "Sign in instead"}</button>
+          </div>
           <p className="af-auth-guest">No account needed to shop. <Link className="af-text-link" href={next === "/checkout" ? "/checkout" : "/shop"}>{next === "/checkout" ? "Continue as a guest" : "Keep exploring"}</Link></p>
         </>}
         <DemoNote />
