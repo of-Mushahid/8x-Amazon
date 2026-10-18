@@ -252,6 +252,12 @@ export function CheckoutFlow() {
     if (user?.email && !getValues("email") && !getFieldState("email").isDirty) setValue("email", user.email);
   }, [user?.email, getValues, getFieldState, setValue]);
 
+  // Checkout requires an account so orders persist to order history. Guests keep
+  // their bag and are returned here after signing in via the ?next redirect.
+  useEffect(() => {
+    if (ready && !user && hydrated && rows.length) router.replace("/sign-in?next=/checkout");
+  }, [ready, user, hydrated, rows.length, router]);
+
   async function placeOrder(raw: CheckoutValues) {
     if (submitting.current || !hydrated || !ready) return;
     const values = validateForm(form, checkoutSchema, raw);
@@ -285,6 +291,7 @@ export function CheckoutFlow() {
   if (completed) return <FlowShell><div className="empty-state af-gate" role="status"><CheckCircle2 size={42} className="af-green" aria-hidden="true" /><h1 className="page-heading">Your demo order is in.</h1><p>No payment was taken. Opening your receipt…</p><Link className="button" href={`/orders/${completed}`}>View your receipt <ArrowRight size={17} aria-hidden="true" /></Link></div></FlowShell>;
   if (!hydrated || !ready) return <FlowLoading label="Getting your bag ready…" />;
   if (!rows.length) return <FlowShell><div className="empty-state af-gate"><span className="af-icon-tile"><ShoppingBag size={30} aria-hidden="true" /></span><p className="eyebrow">A LITTLE SOMETHING GOOD</p><h1 className="page-heading">Your bag is a fresh start.</h1><p className="muted">Find your next everyday favorite, then meet us back here.</p><Link className="button" href="/shop">Explore the collection <ArrowRight size={17} aria-hidden="true" /></Link></div></FlowShell>;
+  if (!user) return <FlowShell><div className="empty-state af-gate"><span className="af-icon-tile"><LockKeyhole size={30} aria-hidden="true" /></span><p className="eyebrow">ALMOST THERE</p><h1 className="page-heading">Sign in to complete your order.</h1><p className="muted">Your bag is saved. Sign in or create a free account to check out and keep your order history.</p><Link className="button" href="/sign-in?next=/checkout">Sign in to checkout <ArrowRight size={17} aria-hidden="true" /></Link><Link className="af-text-link" href="/cart">Back to your bag</Link></div></FlowShell>;
 
   return <FlowShell>
     <Link className="af-back-link" href="/cart"><ArrowLeft size={16} aria-hidden="true" /> Back to your bag</Link>
@@ -294,7 +301,7 @@ export function CheckoutFlow() {
       <div className="af-stack">
         <section className="panel af-section" aria-labelledby="contact-heading">
           <div className="af-section-heading"><span className="af-step-number">01</span><h2 id="contact-heading">Let’s keep in touch.</h2></div>
-          <p className="muted af-section-intro">{user ? "Your account email is filled in below. You can use another for this order." : <>Checking out as a guest. Have an account? <Link className="af-text-link" href="/sign-in?next=/checkout">Sign in</Link></>}</p>
+          <p className="muted af-section-intro">Your account email is used for this order. You can change it below if you prefer a different address for the receipt.</p>
           <fieldset disabled={pending} className="af-fieldset"><div className="field"><label htmlFor="checkout-email">Email address</label><input id="checkout-email" type="email" autoComplete="email" maxLength={254} aria-required="true" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? "checkout-email-error" : "checkout-email-help"} {...register("email")} /><FieldError id="checkout-email-error" message={errors.email?.message} /><span id="checkout-email-help" className="af-field-help">Your receipt will be available on the confirmation page.</span></div></fieldset>
         </section>
         <section className="panel af-section" aria-labelledby="shipping-heading">
@@ -351,7 +358,7 @@ export function SignInFlow() {
     if (!values) return;
     setError("");
     const client = getBrowserSupabase();
-    if (!client) { setError("Account services are not configured yet. You can still browse or check out as a guest when checkout is available."); return; }
+    if (!client) { setError("Account services are not configured yet. You can still browse and add to your bag, but signing in is required for checkout."); return; }
     submitting.current = true;
     setPending(true);
     try {
@@ -401,7 +408,7 @@ export function SignInFlow() {
             <p>{mode === "signin" ? "New to Everyday?" : "Already have an account?"}</p>
             <button type="button" className="button secondary af-full-button" disabled={pending} onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); form.clearErrors(); }}>{mode === "signin" ? "Create your Everyday account" : "Sign in instead"}</button>
           </div>
-          <p className="af-auth-guest">No account needed to shop. <Link className="af-text-link" href={next === "/checkout" ? "/checkout" : "/shop"}>{next === "/checkout" ? "Continue as a guest" : "Keep exploring"}</Link></p>
+          <p className="af-auth-guest">{next === "/checkout" ? <>Your bag is saved. <Link className="af-text-link" href="/cart">Return to your bag</Link></> : <>No account needed to browse. <Link className="af-text-link" href="/shop">Keep exploring</Link></>}</p>
         </>}
         <DemoNote />
       </section>
