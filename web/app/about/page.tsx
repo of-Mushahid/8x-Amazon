@@ -1,21 +1,36 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import { StaticPage } from "@/components/shop/static-page";
 
-export const metadata: Metadata = { title: "About this demo | Everyday" };
+export const metadata: Metadata = { title: "About Everyday | Everyday", description: "Who we are and how Everyday works." };
 
-export default function About() {
-  return <div className="container about-content section">
-    <p className="eyebrow">A MORE CONSIDERED EVERYDAY</p>
-    <h1 className="page-heading">Shopping with a little more thought.</h1>
-    <p>Everyday is an independent educational shopping project inspired by the breadth of Amazon, with calmer discovery, clearer prices, and a simpler checkout. It is not affiliated with Amazon or any featured brand.</p>
-    <h2>A demo, from bag to checkout.</h2>
-    <p>Products, prices, reviews, delivery estimates, and return policies are demonstration data. No real payments are taken, no products are shipped, and no card information is requested. Please use fictional shipping details when testing checkout.</p>
-    <h2>The total, upfront.</h2>
-    <p>All prices are in US dollars. Simulated shipping is $4.95, or free for orders of $50 or more. Demonstration tax is 8% of the merchandise subtotal; it is not a calculation of actual sales tax.</p>
-    <h2>Where the collection comes from.</h2>
-    <p>The 64-product collection and its images are sourced from DummyJSON, a development and prototyping dataset. Product descriptions are source sample content, and reviews are explicitly sample reviews, not verified purchases. Manufacturer claims and commercial image reuse rights have not been verified.</p>
-    <h2>Your demo account.</h2>
-    <p>Guest bags and favorites are stored in your browser. Signing in enables a saved bag, addresses, and order history. Guest order receipts are private to the browser that placed the order. Do not use an Amazon password or real payment details here.</p>
-    <Link href="/shop" className="button">Explore the collection</Link>
-  </div>;
+export default function AboutPage() {
+  return <StaticPage content={{
+    slug: "about", title: "About Everyday", subtitle: "An independent storefront built to show how good shopping software should feel.",
+    crumbs: [{ label: "Get to Know Us" }, { label: "About Everyday" }],
+    blocks: [
+      { type: "lead", text: "Everyday is an independent shopping experience inspired by the breadth and polish of modern marketplaces. It brings together search, personalised discovery, a persistent cart, secure checkout and order history into one fast, accessible store." },
+      { type: "h2", text: "What we believe" },
+      { type: "cards", items: [
+        { title: "Customer first", body: "Clear prices, honest totals shown before checkout, and simple returns." },
+        { title: "Fast and accessible", body: "Built with modern web technology so it works on any device and for every shopper." },
+        { title: "Trust by default", body: "Secure authentication, protected sessions and no surprise charges." },
+      ] },
+      { type: "h2", text: "How the store works" },
+      { type: "bullets", items: [
+        "Browse thousands of products across categories, or search and filter to find exactly what you want.",
+        "Add items to your cart as a guest — your cart is saved in your browser.",
+        "Sign in to keep a saved cart, addresses, favourites and a full order history.",
+        "Check out securely with simulated payment; no real card is ever charged.",
+      ] },
+      { type: "p", text: "Product data, prices, reviews and imagery are demonstration content sourced for prototyping. Everyday is not affiliated with, or an official product of, any brand shown." },
+      { type: "cta", label: "Start shopping", href: "/shop" },
+    ],
+    related: [
+      { label: "Careers", href: "/careers" },
+      { label: "Investor relations", href: "/investors" },
+      { label: "Everyday devices", href: "/devices" },
+      { label: "Sell on Everyday", href: "/sell" },
+      { label: "Help", href: "/help" },
+    ],
+  }} />;
 }

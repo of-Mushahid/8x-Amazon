@@ -160,11 +160,11 @@ export function Header() {
         <button className="amz-subnav-link" onClick={() => setMobile(true)}>
           <Menu size={18} /> All
         </button>
-        <Link href="/shop" className="amz-subnav-link">Today&apos;s Deals</Link>
-        <Link href="/shop" className="amz-subnav-link">Customer Service</Link>
-        <Link href="/shop" className="amz-subnav-link">Registry</Link>
-        <Link href="/shop" className="amz-subnav-link">Gift Cards</Link>
-        <Link href="/shop" className="amz-subnav-link">Sell</Link>
+        <Link href="/shop?deals=1" className="amz-subnav-link">Today&apos;s Deals</Link>
+        <Link href="/help" className="amz-subnav-link">Customer Service</Link>
+        <Link href="/registry" className="amz-subnav-link">Registry</Link>
+        <Link href="/gift-cards" className="amz-subnav-link">Gift Cards</Link>
+        <Link href="/sell" className="amz-subnav-link">Sell</Link>
       </nav>
     </header>
     <Sheet open={mobile} onOpenChange={setMobile}>
