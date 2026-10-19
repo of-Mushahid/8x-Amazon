@@ -1,118 +1,144 @@
-# Everyday Shopping Demo
+# Everyday
 
-A production-grade e-commerce storefront built as an independent simulation. No real payments, no real inventory — but every security boundary, data flow, and user journey behaves like the real thing.
+A production-grade e-commerce storefront — search, category browsing, product pages with variants and reviews, a persistent cart, secure checkout, order history, and account management. The UI is modeled on a modern marketplace and the data layer is hardened with row-level security, server-authoritative pricing, and idempotent checkout.
 
-**Live demo:** https://everyday-8x-amazon-4e54ey3p3-danger17.vercel.app
+**Live demo:** https://everyday-8x-amazon.vercel.app
+**Repository:** https://github.com/of-Mushahid/8x-Amazon
 
-## What this is
+## Features
 
-- **64 products** across 8 categories with realistic imagery
-- **Guest and signed-in checkout** with idempotency, advisory locks, and FOR UPDATE inventory serialization
-- **Persistent guest cart** that merges on sign-in
-- **Row-level security** on every table; service-role-only RPC functions for writes
-- **Integer cents** throughout — no floating-point money
-- **Mock payment** (`demo` only) with guest receipt cookies scoped to order paths
+- 64 products across 8 categories with product imagery
+- Search with autocomplete + recent searches; filter by category, price, rating, delivery; sort; paginate
+- Product pages with image gallery, variants, stock states, and reviews
+- Guest cart persisted in the browser; merges into the server cart on sign-in
+- Saved-for-later / favorites
+- Sign-in and account pages, saved addresses, and order history
+- Checkout with server-side validation, idempotency, and inventory locking
+- Accessible, responsive UI with loading, empty, and error states
 
-## Stack
+## Tech stack
 
-- **Next.js 16.4.2** (App Router, Turbopack) + React 19.3.0
-- **TypeScript** strict mode
-- **Tailwind CSS v4** + shadcn/ui (base-ui)
-- **Supabase** Postgres, Auth, Storage, RLS
-- **Zustand** for client state (persisted cart, saved items)
-- **React Hook Form** + **Zod** for checkout validation
-- **Vercel** for hosting
+- **Next.js 16** (App Router, Turbopack) + **React 19**
+- **TypeScript** (strict)
+- **Tailwind CSS v4** + shadcn/ui
+- **Supabase** — Postgres, Auth, Storage, Row-Level Security
+- **Zustand** (persisted cart / favorites)
+- **React Hook Form** + **Zod**
+- **Vercel** hosting
 
-## Local development
+## Prerequisites
+
+- **Node.js 20+** (tested on 24)
+- A free **Supabase** account — https://supabase.com
+
+## Run it locally
+
+### 1. Clone and install
 
 ```bash
-cd web
+git clone https://github.com/of-Mushahid/8x-Amazon.git
+cd 8x-Amazon/web
 npm install
 ```
 
-Copy `.env.example` to `.env.local` and fill in your Supabase credentials:
+### 2. Create a Supabase project
 
-```
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-```
+1. In the Supabase dashboard, **New project** (any name, strong DB password).
+2. Grab your keys from **Project Settings → API**:
+   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+   - **anon / public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY` (server-only — never expose to the browser)
 
-Apply the database migration in the Supabase SQL Editor (`supabase/migrations/001_store.sql`), then seed the demo catalog:
+### 3. Configure auth URLs
+
+In **Authentication → URL Configuration**:
+- **Site URL**: `http://localhost:3000`
+- **Additional Redirect URLs**: add `http://localhost:3000/**`
+
+(When you deploy, repeat this with your production URL so sign-up confirmation emails return to your app.)
+
+### 4. Apply the database schema
+
+Open **SQL Editor** in Supabase, paste the contents of [`supabase/migrations/001_store.sql`](supabase/migrations/001_store.sql), and **Run**. This creates all tables, RLS policies, storage bucket, and the checkout RPC.
+
+> Tip: paste the file in one go. If a function is created with a mangled regex the checkout will fail — after running, confirm `select public.store_valid_address('{"fullName":"A B","street":"1 Main","city":"Austin","state":"TX","zip":"78701","country":"US"}'::jsonb);` returns `true`.
+
+### 5. Set environment variables
 
 ```bash
-npm run seed
+cp .env.example .env.local
 ```
 
-Start the dev server:
+Then edit `.env.local` and fill in the three values from step 2.
+
+### 6. Seed the catalog and run
 
 ```bash
-npm run dev
+npm run seed     # uploads product images to Storage and inserts 64 products / 8 categories / reviews
+npm run dev      # http://localhost:3000
 ```
 
-Open http://localhost:3000.
+Sign up with any email/password to test the account, cart, and checkout flows. (If you want instant sign-up while testing locally, you can turn off **Authentication → Sign In / Providers → Email → Confirm email**.)
 
 ## Scripts
 
-- `npm run dev` — development server with Turbopack
-- `npm run build` — production build with type checking
-- `npm run typecheck` — TypeScript only
-- `npm run test` — backend validation tests + store logic tests
-- `npm run seed` — populate Supabase with 64 products, 8 categories, sample reviews
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the dev server (Turbopack) |
+| `npm run build` | Production build + type check |
+| `npm start` | Serve the production build |
+| `npm run typecheck` | TypeScript check only |
+| `npm run lint` | ESLint |
+| `npm run test` | Backend validation + cart logic tests |
+| `npm run seed` | Populate Supabase with the demo catalog (resets stock) |
 
-## Architecture notes
+## Deploying to Vercel
 
-### Security
+1. Import the repo in Vercel (framework preset **Next.js**, root directory `web`).
+2. Add the same three environment variables from step 2 under **Project → Settings → Environment Variables**.
+3. Set the Supabase **Site URL** and **Redirect URLs** to your `*.vercel.app` domain (step 3).
+4. Deploy. On Vercel, if **Deployment Protection** is on, disable it (Settings → Deployment Protection) so the site is publicly reachable.
 
-- All monetary values are `INTEGER` cents; server-side totals are recomputed from catalog prices, never trusted from the client
-- Idempotency keys are scoped to user or guest session; replays return the original order without decrementing stock twice
-- `pg_advisory_xact_lock` serializes checkouts for the same identity/key pair
-- `FOR UPDATE` locks on products and variants in sorted order prevent deadlocks during concurrent multi-product checkouts
-- Guest receipts are HMAC-SHA256 secrets stored in HttpOnly, order-path-scoped cookies
-- RLS policies restrict order visibility to owners; no anon SELECT on orders or order_items
+CLI alternative:
 
-### Cart
+```bash
+npx vercel link
+npx vercel env add NEXT_PUBLIC_SUPABASE_URL production
+npx vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production
+npx vercel env add SUPABASE_SERVICE_ROLE_KEY production
+npx vercel deploy --prod
+```
 
-- Guest carts live in Zustand with `localStorage` persistence
-- On sign-in, the server merges the guest cart into the user's server-side cart
-- Cart contents do not reserve inventory; stock is only decremented at checkout under locks
+## How it works (security & data)
 
-### Checkout
-
-- Two paths: guest (session cookie + receipt cookie) and signed-in (user ID from JWT)
-- `checkout_store` RPC validates address, items, stock, and totals server-side
-- Shipping: free for orders ≥ $50 or empty carts; $4.95 otherwise
-- Tax: 8% floor((subtotal × 8 + 50) / 100)
+- **Money is integer cents** everywhere; totals are recomputed server-side from catalog prices, never trusted from the client.
+- **Checkout is a single `SECURITY DEFINER` RPC** (`checkout_store`) that validates the address and items, locks the referenced product/variant rows with `FOR UPDATE` (in sorted order to avoid deadlocks), re-prices from the database, checks stock, and inserts the order atomically.
+- **Idempotency**: each checkout carries a retry key; replays return the original order and never decrement stock twice.
+- **Row-Level Security** on every table; orders are visible only to their owner. The browser has no write access to orders or inventory — only the service role can call the write RPCs.
+- **Guest checkout** is protected by a hashed session cookie and per-order HMAC receipt cookies scoped to the order's API path.
+- **Auth** is verified server-side with `getUser()` on every privileged route; the client session is never trusted for authorization.
 
 ## Project structure
 
 ```
 web/
-── app/                    # Next.js App Router pages and API routes
-├── components/
-│   └── shop/              # Storefront UI components
-├── data/
-│   └── catalog.ts         # Generated 64-product catalog (stable UUIDs)
-├── lib/
-│   ├── checkout.ts        # Server-side validation and totals
-│   ├── store.ts           # Zustand cart store
-│   └── supabase/          # Supabase client factories
-── public/images/         # Product imagery
-├── scripts/
-│   └── seed.ts            # Database seeder
-├── supabase/migrations/
-│   └── 001_store.sql      # Full schema with RLS and RPC functions
-└── tests/
-    ├── backend.test.ts    # Pure validation tests
-    └── store.test.ts      # Cart logic tests
+├── app/                      # App Router pages + API route handlers
+│   ├── api/                  # /checkout, /orders, /addresses, /cart
+│   └── auth/callback/        # OAuth / email-confirmation code exchange
+├── components/shop/          # Storefront UI (header, cart, catalog, PDP, flows)
+├── content/pages.ts          # Copy for informational pages (sell, help, shipping, …)
+├── data/catalog.ts           # Generated 64-product catalog (stable UUIDs)
+├── lib/                      # checkout logic, Zustand store, Supabase clients
+├── scripts/seed.ts           # Database + Storage seeder
+├── supabase/migrations/      # 001_store.sql — schema, RLS, RPC functions
+└── tests/                    # backend + cart logic tests
 ```
 
-## Demo limitations
+## Notes
 
-- **No real payments** — `payment_method` is always `'demo'`
-- **No real shipping** — address validation is format-only; no carrier integration
-- **Sample reviews** — all reviews are marked `is_sample = true` with synthetic authors
-- **DummyJSON imagery** — product images are sourced from DummyJSON (check their license for production use)
+- Payments are simulated (`payment_method = 'demo'`); no card data is collected and nothing is charged or shipped.
+- Product imagery and sample reviews are demonstration data; replace them with your own licensed content before any real-world use.
+- This is an independent project and is not affiliated with, or endorsed by, Amazon or any brand shown.
 
 ## License
 
