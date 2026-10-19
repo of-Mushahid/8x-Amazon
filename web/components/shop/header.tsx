@@ -150,8 +150,10 @@ export function Header() {
             <span className="amz-nav-line2">& Orders</span>
           </Link>
           <button className="amz-cart-btn" onClick={() => cartOpen(true)} aria-label={`Cart, ${count} items`}>
-            <ShoppingCart size={28} />
-            <span className="amz-cart-count">{count}</span>
+            <span className="amz-cart-icon-wrap">
+              <ShoppingCart size={30} />
+              <span className="amz-cart-count">{count}</span>
+            </span>
             <span className="amz-nav-line2">Cart</span>
           </button>
         </div>

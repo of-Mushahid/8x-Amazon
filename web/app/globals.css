@@ -99,9 +99,10 @@ ul { list-style: none; }
 .amz-nav-location-btn { display: flex; align-items: center; }
 .amz-nav-line1 { display: block; font-size: 12px; line-height: 1; color: #ccc; }
 .amz-nav-line2 { font-size: 14px; font-weight: 700; line-height: 1.2; display: flex; align-items: center; gap: 3px; }
-.amz-cart-btn { display: flex; align-items: flex-end; gap: 4px; padding: 6px 9px; border: 1px solid transparent; border-radius: 3px; color: white; position: relative; }
+.amz-cart-btn { display: flex; align-items: flex-end; gap: 6px; padding: 6px 9px; border: 1px solid transparent; border-radius: 3px; color: white; }
 .amz-cart-btn:hover { border-color: white; }
-.amz-cart-count { position: absolute; top: 0; right: 22px; background: var(--orange); color: var(--navy); font-size: 14px; font-weight: 700; min-width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; }
+.amz-cart-icon-wrap { position: relative; display: inline-flex; line-height: 0; }
+.amz-cart-count { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); color: var(--orange); font-size: 16px; font-weight: 700; line-height: 1; font-family: Arial, sans-serif; }
 .amz-subnav { display: flex; align-items: center; gap: 2px; padding: 6px 16px; background: var(--navy-light); color: white; font-size: 14px; overflow-x: auto; }
 .amz-subnav-link { padding: 4px 9px; border: 1px solid transparent; border-radius: 3px; color: white; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
 .amz-subnav-link:hover { border-color: white; text-decoration: none; color: white !important; }
