@@ -89,7 +89,8 @@ ul { list-style: none; }
 .amz-search-wrap { flex: 1; position: relative; min-width: 0; }
 .amz-search-form { display: flex; height: 40px; border-radius: 4px; overflow: hidden; background: #fff; }
 .amz-search-cat { background: #f3f3f3; border: none; border-right: 1px solid #cdcdcd; padding: 0 8px; font-size: 12px; color: #555; border-radius: 4px 0 0 4px; cursor: pointer; min-width: 50px; }
-.amz-search-form input { flex: 1; border: none; padding: 0 12px; font-size: 14px; outline: none; min-width: 0; }
+.amz-search-form input { flex: 1; border: none; padding: 0 12px; font-size: 14px; outline: none; min-width: 0; color: var(--text); background: #fff; }
+.amz-search-form input::placeholder { color: #888; }
 .amz-search-form:focus-within { box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.5); }
 .amz-search-btn { background: var(--button-yellow); border: none; width: 48px; display: grid; place-items: center; border-radius: 0 4px 4px 0; color: var(--navy); }
 .amz-search-btn:hover { background: var(--button-yellow-hover); }
