@@ -437,6 +437,20 @@ ul { list-style: none; }
 .amz-static-side li:last-child { border-bottom: 0; }
 .amz-static-side a { font-size: 14px; color: var(--link); }
 .amz-static-side a:hover { color: var(--link-hover); text-decoration: underline; }
+.amz-help-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.amz-help-method { display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 16px; background: #fff; }
+.amz-help-method > svg { color: var(--link); flex-shrink: 0; }
+.amz-help-method > div { flex: 1; min-width: 0; }
+.amz-help-method strong { font-size: 14px; color: var(--text); }
+.amz-help-method p { font-size: 12px; margin: 2px 0 0; }
+.amz-help-btn { padding: 8px 14px; background: var(--button-yellow); border: 1px solid #FCD200; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.amz-help-btn:hover { background: var(--button-yellow-hover); }
+.amz-help-form { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: #fafafa; display: flex; flex-direction: column; gap: 14px; max-width: 560px; }
+.amz-help-form h3 { font-size: 16px; margin: 0; color: var(--text); }
+.amz-help-form .amz-buy-btn { align-self: flex-start; width: auto; padding: 9px 20px; }
+.amz-help-sent { display: flex; align-items: center; gap: 14px; border: 1px solid #c8e6c8; background: #f0f8f0; border-radius: 8px; padding: 18px 20px; }
+.amz-help-check { color: var(--green); display: inline-flex; }
+.amz-help-sent p { margin: 2px 0 0; font-size: 13px; }
 @media (max-width: 900px) {
   .amz-static-body { grid-template-columns: 1fr; }
   .amz-static-side { position: static; order: 2; }

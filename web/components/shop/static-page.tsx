@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthAction } from "./auth-action";
 
 export type Block =
   | { type: "lead"; text: string }
@@ -10,7 +11,7 @@ export type Block =
   | { type: "steps"; items: { title: string; body: string }[] }
   | { type: "table"; caption?: string; head: string[]; rows: string[][] }
   | { type: "faq"; items: { q: string; a: string }[] }
-  | { type: "cta"; label: string; href: string; note?: string };
+  | { type: "cta"; label: string; href: string; note?: string; auth?: boolean };
 
 export type StaticContent = {
   slug: string;
@@ -62,6 +63,6 @@ function BlockView({ block }: { block: Block }) {
     case "faq": return <div className="amz-static-faq">{block.items.map((f, i) => (
       <details key={i}><summary>{f.q}</summary><p>{f.a}</p></details>
     ))}</div>;
-    case "cta": return <div className="amz-static-cta"><Link href={block.href} className="amz-buy-btn amz-cta-btn">{block.label}</Link>{block.note && <span className="amz-static-ctanote">{block.note}</span>}</div>;
+    case "cta": return <div className="amz-static-cta">{block.auth === false ? <Link href={block.href} className="amz-buy-btn amz-cta-btn">{block.label}</Link> : <AuthAction href={block.href} label={block.label} className="amz-buy-btn amz-cta-btn" />}{block.note && <span className="amz-static-ctanote">{block.note}</span>}</div>;
   }
 }

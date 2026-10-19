@@ -1,13 +1,5 @@
 import type { StaticContent } from "@/components/shop/static-page";
 
-const helpRelated = [
-  { label: "Your orders", href: "/orders" },
-  { label: "Shipping rates & policies", href: "/shipping" },
-  { label: "Returns & replacements", href: "/returns" },
-  { label: "Your account", href: "/account" },
-  { label: "Cancel or change an order", href: "/orders" },
-];
-
 export const pages: Record<string, StaticContent> = {
   sell: {
     slug: "sell", title: "Sell on Everyday", subtitle: "Reach millions of customers. Grow your business with Everyday Selling.",
@@ -34,7 +26,7 @@ export const pages: Record<string, StaticContent> = {
         "Seller app to manage your business from anywhere.",
         "Transparent fees — you always know what you'll pay.",
       ] },
-      { type: "cta", label: "Start selling", href: "/sign-in?next=/account", note: "You'll be guided through account setup step by step." },
+      { type: "cta", label: "Start selling", href: "/account", note: "You'll be guided through account setup step by step." },
       { type: "h2", text: "Frequently asked questions" },
       { type: "faq", items: [
         { q: "Do I need a registered business to sell?", a: "No. You can start as an individual. As you grow, you can add business details to unlock more features." },
@@ -62,7 +54,7 @@ export const pages: Record<string, StaticContent> = {
         ["Electronics, gaming", "2%"],
         ["Video games, TVs", "1%"],
       ] },
-      { type: "cta", label: "Join now", href: "/sign-in?next=/account", note: "Free to join. Most approvals take under an hour." },
+      { type: "cta", label: "Join now", href: "/account", note: "Free to join. Most approvals take under an hour." },
       { type: "faq", items: [
         { q: "When do I get paid?", a: "Fees are paid roughly 60 days after the end of the month in which the sale occurred, once a minimum balance is reached." },
         { q: "Can I promote on social media?", a: "Yes, as long as you clearly disclose your affiliate relationship and follow the programme policies." },
@@ -88,7 +80,7 @@ export const pages: Record<string, StaticContent> = {
         "Self-service tools with flexible budgets — start from as little as $1 a day.",
         "Measurable results with sales and new-to-brand reporting.",
       ] },
-      { type: "cta", label: "Create a campaign", href: "/sign-in?next=/account", note: "You need a Professional selling account or vendor central access." },
+      { type: "cta", label: "Create a campaign", href: "/account", note: "You need a Professional selling account or vendor central access." },
     ],
     related: [{ label: "Sell products", href: "/sell" }, { label: "Become an affiliate", href: "/affiliates" }, { label: "Help", href: "/help" }],
   },
@@ -111,7 +103,7 @@ export const pages: Record<string, StaticContent> = {
         { title: "Set your price", body: "Choose a royalty plan and pricing that fits your book." },
         { title: "Publish", body: "Your book goes live in up to 72 hours and you earn on every sale." },
       ] },
-      { type: "cta", label: "Start publishing", href: "/sign-in?next=/account" },
+      { type: "cta", label: "Start publishing", href: "/account" },
     ],
     related: [{ label: "Sell products", href: "/sell" }, { label: "Advertise your products", href: "/advertise" }, { label: "Help", href: "/help" }],
   },
@@ -198,7 +190,7 @@ export const pages: Record<string, StaticContent> = {
         ["Product Design", "Remote", "Full time"],
         ["Data Science", "Remote", "Full time"],
       ] },
-      { type: "cta", label: "See all openings", href: "/sign-in?next=/account", note: "This is a demonstration page; applications are not collected." },
+      { type: "cta", label: "See all openings", href: "/account", note: "Sign in to view and apply for open roles." },
     ],
     related: [{ label: "About Everyday", href: "/about" }, { label: "Investor relations", href: "/investors" }, { label: "Devices", href: "/devices" }],
   },
@@ -233,7 +225,7 @@ export const pages: Record<string, StaticContent> = {
         { title: "Tab", body: "A family-friendly tablet with hands-on learning and entertainment." },
         { title: "Home", body: "See who's at the door and keep an eye on what matters." },
       ] },
-      { type: "cta", label: "Shop devices", href: "/shop?category=tech" },
+      { type: "cta", label: "Shop devices", href: "/shop?category=tech", auth: false },
     ],
     related: [{ label: "Tech & electronics", href: "/shop?category=tech" }, { label: "About Everyday", href: "/about" }, { label: "Help", href: "/help" }],
   },
@@ -283,26 +275,6 @@ export const pages: Record<string, StaticContent> = {
     related: [{ label: "Shipping rates & policies", href: "/shipping" }, { label: "Your orders", href: "/orders" }, { label: "Help", href: "/help" }],
   },
 
-  help: {
-    slug: "help", title: "Customer Service", subtitle: "What can we help you find today?",
-    crumbs: [{ label: "Let Us Help You" }, { label: "Help" }],
-    blocks: [
-      { type: "h2", text: "Popular topics" },
-      { type: "cards", items: [
-        { title: "Your orders", body: "Track, cancel or return a recent order.", cta: { label: "View orders", href: "/orders" } },
-        { title: "Shipping & delivery", body: "Rates, options and what affects delivery times.", cta: { label: "Shipping help", href: "/shipping" } },
-        { title: "Returns", body: "How to return an item and get a refund.", cta: { label: "Returns help", href: "/returns" } },
-        { title: "Login & security", body: "Sign-in problems and account security.", cta: { label: "Your account", href: "/account" } },
-        { title: "Payments", body: "Payment methods, points and gift cards.", cta: { label: "Payment options", href: "/points" } },
-        { title: "Product support", body: "Help with devices and digital content.", cta: { label: "Devices", href: "/devices" } },
-      ] },
-      { type: "h2", text: "Contact us" },
-      { type: "p", text: "If you can't find an answer above, sign in and we'll show the support options for your recent orders, including callback and chat." },
-      { type: "cta", label: "Sign in for support", href: "/sign-in?next=/help" },
-    ],
-    related: helpRelated,
-  },
-
   registry: {
     slug: "registry", title: "Everyday Registry", subtitle: "Create one list for every occasion and share it with loved ones.",
     crumbs: [{ label: "Registry" }],
@@ -313,7 +285,7 @@ export const pages: Record<string, StaticContent> = {
         { title: "Add anything", body: "Save products from any category to your list." },
         { title: "Share the link", body: "Send your registry to friends and family." },
       ] },
-      { type: "cta", label: "Create a registry", href: "/sign-in?next=/account" },
+      { type: "cta", label: "Create a registry", href: "/saved" },
     ],
     related: [{ label: "Gift cards", href: "/gift-cards" }, { label: "Your account", href: "/account" }, { label: "Help", href: "/help" }],
   },
@@ -328,7 +300,7 @@ export const pages: Record<string, StaticContent> = {
         { title: "Print at home", body: "Choose a design and print it yourself." },
         { title: "Physical cards", body: "A real card in an envelope, mailed to the recipient." },
       ] },
-      { type: "cta", label: "Shop gift cards", href: "/shop" },
+      { type: "cta", label: "Shop gift cards", href: "/shop", auth: false },
     ],
     related: [{ label: "Reload your balance", href: "/reload-balance" }, { label: "Registry", href: "/registry" }, { label: "Help", href: "/help" }],
   },
